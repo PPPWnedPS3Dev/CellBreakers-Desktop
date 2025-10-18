@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellBreakers - PSN Games</title>
+  <link rel="icon" href="assets/img/favicon.png" />
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      color: white;
+      position: relative;
+      transition: color 0.3s;
+    }
+    canvas#particles {position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;}
+    :root {
+      --card: rgba(0, 0, 0, 0.85);
+      --accent: #0077ff;
+    }
+    .light {
+      --card: rgba(255, 255, 255, 0.9);
+      --accent: #0055ff;
+      color: #111;
+    }
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: scale(1.03); }
+    .title { font-size: 18px; font-weight: 600; }
+    .meta { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+    .buttons { margin-top: 10px; display: flex; gap: 10px; }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background: #00aaff;
+      transform: translateY(-2px);
+    }
+    .offline {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-top: 50px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <header>CellBreakers - PSN Games Library</header>
+  <div class="container" id="games"></div>
+  <div class="offline" id="offline" style="display:none;">⚠Cannot fetch data.</div>
+
+  <script>
+    // === Apply saved user settings from localStorage ===
+    const theme = localStorage.getItem('theme');
+    if (theme === 'light') document.body.classList.add('light');
+
+    // === Fetch and display PSN games ===
+    async function loadGames() {
+      const container = document.getElementById('games');
+      const offlineMsg = document.getElementById('offline');
+
+      try {
+        const res = await fetch("https://raw.githubusercontent.com/PPPWnedPS3Dev/CellBreakers-Desktop/main/PS3_GAMES.tsv");
+        if (!res.ok) throw new Error('Failed to load PS3_GAMES.tsv');
+        const text = await res.text();
+        const rows = text.trim().split("\n").slice(1); // skip header line
+
+        rows.forEach(row => {
+          const [id, region, name, pkg, rap, cid, date, rapLink, size, sha] = row.split("\t");
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="title">${name || "Unknown Game"}</div>
+            <div class="meta">Region: ${region || "N/A"} | ID: ${id || "N/A"}</div>
+            <div class="meta">Size: ${size || "Unknown"} | Updated: ${date || "N/A"}</div>
+            <div class="meta">Content ID: ${cid || "N/A"}</div>
+            <div class="buttons">
+              ${pkg ? `<button onclick="window.open('${pkg}', '_blank')">Download .PKG</button>` : ''}
+              ${rapLink ? `<button onclick="window.open('${rapLink}', '_blank')">Download .RAP</button>` : ''}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error(err);
+        offlineMsg.style.display = "block";
+      }
+    }
+
+    // === Particles Background ===
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+    const colors = ['#00aaff', '#0077ff', '#003366'];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = (Math.random() - 0.5) * 0.5;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+    function initParticles() {
+      particlesArray = [];
+      for (let i = 0; i < 80; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesArray.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+    initParticles();
+    animateParticles();
+
+    // Load games after setting up particles
+    loadGames();
+  </script>
+</body>
+</html>

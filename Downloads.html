@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CellBreakers Desktop - Downloads</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      color: white;
+      position: relative;
+      transition: color 0.3s;
+    }
+    canvas#particles {position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;}
+    :root {
+      --card: rgba(0, 0, 0, 0.85);
+      --accent: #0077ff;
+    }
+    .light {
+      --card: rgba(255, 255, 255, 0.9);
+      --accent: #0055ff;
+      color: #111;
+    }
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .downloads-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .download-box {
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .download-box:hover {
+      transform: scale(1.03);
+    }
+    .download-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    .download-title {
+      color: var(--accent);
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .download-desc {
+      color: #ccc;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+    .light .download-desc {
+      color: #666;
+    }
+    .download-count {
+      color: #aaa;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+    .light .download-count {
+      color: #777;
+    }
+    .download-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .download-btn:hover {
+      background: #00aaff;
+      transform: translateY(-2px);
+    }
+    button.back-btn {
+      margin-top: 25px;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font-weight: bold;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    button.back-btn:hover {
+      background: #00aaff;
+      transform: translateY(-2px);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <div class="container">
+    <header>Most Popular Downloads on our app</header>
+    <div class="downloads-grid">
+      <div class="download-box">
+        <div class="download-icon">📥</div>
+        <div class="download-title">multiMAN</div>
+        <div class="download-desc">The ultimate PS3 file manager and backup loader.</div>
+        <div class="download-count">2,480,000+ downloads</div>
+        <button class="download-btn" onclick="window.location.href='https://example.com/multiman.pkg'">Download</button>
+      </div>
+
+      <div class="download-box">
+        <div class="download-icon">🌐</div>
+        <div class="download-title">webMAN MOD</div>
+        <div class="download-desc">Powerful web server plugin for PS3 — mount games directly.</div>
+        <div class="download-count">1,980,000+ downloads</div>
+        <button class="download-btn" onclick="window.location.href='https://example.com/webmanmod.pkg'">Download</button>
+      </div>
+
+      <div class="download-box">
+        <div class="download-icon">🎮</div>
+        <div class="download-title">IRISMAN</div>
+        <div class="download-desc">A versatile backup manager with great performance and UI.</div>
+        <div class="download-count">1,250,000+ downloads</div>
+        <button class="download-btn" onclick="window.location.href='https://example.com/irisman.pkg'">Download</button>
+      </div>
+
+      <div class="download-box">
+        <div class="download-icon">🔒</div>
+        <div class="download-title">Apollo Save Tool</div>
+        <div class="download-desc">Manage, resign, and unlock your PS3 game saves easily.</div>
+        <div class="download-count">870,000+ downloads</div>
+        <button class="download-btn" onclick="window.location.href='https://example.com/apollo.pkg'">Download</button>
+      </div>
+    </div>
+    <button class="back-btn" onclick="window.location.href='index.html'">Back to Home</button>
+  </div>
+
+  <script>
+    // === Particle System ===
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+    const colors = ['#00aaff', '#0077ff', '#003366'];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = (Math.random() - 0.5) * 0.5;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particlesArray = [];
+      for (let i = 0; i < 80; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesArray.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+
+    // === Local Storage Settings ===
+    function loadSettings() {
+      const bg = localStorage.getItem('bg');
+      const particlesEnabled = localStorage.getItem('particles') === 'true';
+      const theme = localStorage.getItem('theme') || 'dark';
+
+      if (bg) {
+        document.body.style.background = `linear-gradient(135deg, ${bg})`;
+      }
+      if (theme === 'light') {
+        document.body.classList.add('light');
+      }
+      if (!particlesEnabled) {
+        canvas.style.display = 'none';
+      } else {
+        canvas.style.display = 'block';
+        initParticles();
+        animateParticles();
+      }
+    }
+
+    loadSettings();
+  </script>
+</body>
+</html>

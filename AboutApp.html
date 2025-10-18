@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CellBreakers Desktop - About</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      color: white;
+      position: relative;
+      transition: color 0.3s;
+    }
+    canvas#particles {position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;}
+    :root {
+      --card: rgba(0, 0, 0, 0.85);
+      --accent: #0077ff;
+    }
+    .light {
+      --card: rgba(255, 255, 255, 0.9);
+      --accent: #0055ff;
+      color: #111;
+    }
+    .light .story-desc {
+      color: #666;
+    }
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 20px;
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+      animation: fadeIn 1.5s ease-in-out;
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: calc(100vh - 60px);
+      width: 90%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .story-box {
+      background: var(--card);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      text-align: center;
+      max-width: 700px;
+      transition: transform 0.2s;
+    }
+    .story-box:hover {
+      transform: scale(1.02);
+    }
+    .story-title {
+      color: var(--accent);
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .story-desc {
+      color: #ccc;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    button.back-btn {
+      margin-top: 25px;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font-weight: bold;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    button.back-btn:hover {
+      background: #00aaff;
+      transform: translateY(-2px);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <header>About CellBreakers</header>
+  <div class="container">
+    <div class="story-box">
+      <div class="story-title">Our Story</div>
+      <div class="story-desc">
+        CellBreakers Desktop began as a passion project in early 2023, born from a love for the PlayStation 3 and a desire to keep its legacy alive. As PS3 enthusiasts, we noticed a gap in user-friendly tools for managing themes, avatars, files, and downloads for modded consoles. What started as a simple file manager evolved into a comprehensive desktop app, designed to make PS3 customization accessible and fun for everyone—from beginners to hardcore homebrew users.<br><br>
+        Our team of developers and gamers worked tirelessly to integrate features like real-time PS3 detection, seamless downloads, and a sleek interface with customizable themes and particle effects. We're committed to community-driven updates, ensuring CellBreakers remains a go-to resource for PS3 modding. Join us in breaking the limits of what's possible with your console!
+      </div>
+      <button class="back-btn" onclick="window.location.href='index.html'">Back to Home</button>
+    </div>
+  </div>
+
+  <script>
+    // === Particle System ===
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+    const colors = ['#00aaff', '#0077ff', '#003366'];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.speedY = (Math.random() - 0.5) * 0.5;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particlesArray = [];
+      for (let i = 0; i < 80; i++) {
+        particlesArray.push(new Particle());
+      }
+    }
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particlesArray.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+
+    // === Local Storage Settings ===
+    function loadSettings() {
+      const bg = localStorage.getItem('bg');
+      const particlesEnabled = localStorage.getItem('particles') === 'true';
+      const theme = localStorage.getItem('theme') || 'dark';
+
+      if (bg) {
+        document.body.style.background = `linear-gradient(135deg, ${bg})`;
+      }
+      if (theme === 'light') {
+        document.body.classList.add('light');
+      }
+      if (!particlesEnabled) {
+        canvas.style.display = 'none';
+      } else {
+        canvas.style.display = 'block';
+        initParticles();
+        animateParticles();
+      }
+    }
+
+    loadSettings();
+  </script>
+</body>
+</html>

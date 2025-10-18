@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellBreakers Desktop - File Manager</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      color: white;
+      transition: background 0.3s;
+    }
+    canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
+    .container {
+      position:relative;
+      z-index:1;
+      width:90%;
+      max-width:1200px;
+      margin-top:30px;
+      background: rgba(0,0,0,0.75);
+      border-radius:15px;
+      padding:20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size:2.5rem;
+      letter-spacing:2px;
+      text-shadow:0 0 10px rgba(0,0,0,0.7);
+      margin-bottom:20px;
+      text-align:center;
+      animation: fadeIn 1s ease-in-out;
+    }
+    #ps3Status {
+      text-align:center;
+      margin-bottom:15px;
+      font-style:italic;
+      color:#aaa;
+      font-size:1rem;
+      transition: color 0.3s;
+    }
+    .file-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap:15px;
+      padding:10px;
+    }
+    .file-card {
+      background: rgba(0,0,0,0.6);
+      padding:15px;
+      border-radius:10px;
+      text-align:center;
+      transition: all 0.3s ease;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      position:relative;
+      backdrop-filter: blur(5px);
+    }
+    .file-card:hover {
+      background: rgba(0,0,0,0.85);
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,119,255,0.3);
+    }
+    .file-card svg {width:40px; height:40px; margin-bottom:10px;}
+    .file-card p {font-size:1rem; word-break: break-word; color:#fff; margin-bottom:10px;}
+    .file-actions {
+      display:none;
+      position:absolute;
+      bottom:10px;
+      gap:5px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    .file-card:hover .file-actions {display:flex;}
+    .file-actions button {
+      background:#0077ff;
+      color:white;
+      border:none;
+      border-radius:5px;
+      padding:5px 10px;
+      cursor:pointer;
+      font-size:0.85rem;
+      transition: all 0.2s ease;
+    }
+    .file-actions button:hover {
+      background:#00aaff;
+      transform: translateY(-2px);
+    }
+    .drop-zone {
+      border:2px dashed #0077ff;
+      border-radius:10px;
+      padding:20px;
+      text-align:center;
+      margin:20px 0;
+      background: rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+      font-size:1.1rem;
+      color:#ccc;
+    }
+    .drop-zone.dragover {
+      background:rgba(0,119,255,0.2);
+      border-color:#00aaff;
+      color:#fff;
+    }
+    .toolbar {
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin-bottom:20px;
+    }
+    .toolbar button {
+      background:#0077ff;
+      color:white;
+      border:none;
+      border-radius:5px;
+      padding:8px 15px;
+      cursor:pointer;
+      font-size:1rem;
+      transition: all 0.2s ease;
+    }
+    .toolbar button:hover {
+      background:#00aaff;
+      transform: translateY(-2px);
+    }
+    .rename-modal {
+      display:none;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.8);
+      z-index:100;
+      justify-content:center;
+      align-items:center;
+    }
+    .rename-modal-content {
+      background:rgba(0,0,0,0.9);
+      padding:20px;
+      border-radius:10px;
+      text-align:center;
+      color:white;
+    }
+    .rename-modal input {
+      padding:8px;
+      margin:10px 0;
+      border-radius:5px;
+      border:none;
+      width:80%;
+      font-size:1rem;
+    }
+    .rename-modal button {
+      background:#0077ff;
+      color:white;
+      border:none;
+      border-radius:5px;
+      padding:8px 15px;
+      cursor:pointer;
+      margin:5px;
+    }
+    .rename-modal button:hover {background:#00aaff;}
+    @keyframes fadeIn {
+      from {opacity:0;}
+      to {opacity:1;}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <div class="container">
+    <h1>File Manager</h1>
+    <div class="toolbar">
+      <button onclick="refreshFiles()">Refresh</button>
+      <button onclick="goToParent()">Parent Directory</button>
+    </div>
+    <div id="ps3Status">🔍 Searching for PS3...</div>
+    <div class="drop-zone" id="dropZone">💾 Drag & Drop files here to upload</div>
+    <div class="file-grid" id="fileGrid"></div>
+  </div>
+  <div class="rename-modal" id="renameModal">
+    <div class="rename-modal-content">
+      <h2>Rename File</h2>
+      <input type="text" id="renameInput" placeholder="Enter new name">
+      <div>
+        <button onclick="confirmRename()">Rename</button>
+        <button onclick="closeRenameModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🎇 Particle background
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+    function resizeCanvas() {canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    window.addEventListener('resize',resizeCanvas);resizeCanvas();
+    class Particle {
+      constructor() {
+        this.x=Math.random()*canvas.width;
+        this.y=Math.random()*canvas.height;
+        this.size=Math.random()*2+1;
+        this.speedX=(Math.random()-0.5)*0.5;
+        this.speedY=(Math.random()-0.5)*0.5;
+        this.color=['#00aaff','#0077ff','#003366'][Math.floor(Math.random()*3)];
+      }
+      update() {
+        this.x+=this.speedX;
+        this.y+=this.speedY;
+        if(this.x<0||this.x>canvas.width) this.speedX*=-1;
+        if(this.y<0||this.y>canvas.height) this.speedY*=-1;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+        ctx.fillStyle=this.color;
+        ctx.fill();
+      }
+    }
+    function initParticles() {
+      particlesArray=[];
+      for(let i=0;i<80;i++) {particlesArray.push(new Particle());}
+    }
+    function animateParticles() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particlesArray.forEach(p=>{p.update();p.draw();});
+      requestAnimationFrame(animateParticles);
+    }
+    initParticles();animateParticles();
+
+    // ⚙️ File Manager Logic
+    const ps3Status = document.getElementById('ps3Status');
+    const fileGrid = document.getElementById('fileGrid');
+    const dropZone = document.getElementById('dropZone');
+    const renameModal = document.getElementById('renameModal');
+    const renameInput = document.getElementById('renameInput');
+    let ps3IP = null;
+    let currentPath = '/dev_hdd0/';
+    let currentFile = null;
+
+    async function detectPS3() {
+      ps3Status.textContent = '🔍 Scanning for PS3...';
+      const subnet = '192.168.1.';
+      for (let i = 100; i <= 120; i++) {
+        const ip = subnet + i;
+        try {
+          const controller = new AbortController();
+          setTimeout(() => controller.abort(), 1000); // Timeout after 1s
+          const res = await fetch(`http://${ip}/index.ps3`, { mode: 'no-cors', signal: controller.signal });
+          ps3IP = ip;
+          ps3Status.textContent = `✅ PS3 detected at ${ip}`;
+          listFiles(ip, currentPath);
+          return;
+        } catch { continue; }
+      }
+      ps3Status.textContent = '❌ No PS3 detected on your network.';
+    }
+
+    async function listFiles(ip, path) {
+      try {
+        const res = await fetch(`http://${ip}${path}`, { mode: 'cors' });
+        if (!res.ok) throw new Error('Failed to fetch directory');
+        const text = await res.text();
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        const links = doc.querySelectorAll('a');
+        fileGrid.innerHTML = '';
+        currentPath = path;
+        links.forEach(link => {
+          const href = link.getAttribute('href');
+          if (!href || href.includes('../')) return;
+          const name = link.textContent;
+          const isDir = href.endsWith('/');
+          const card = document.createElement('div');
+          card.className = 'file-card';
+          card.innerHTML = `
+            ${isDir
+              ? '<svg viewBox="0 0 24 24"><path fill="#00aaff" d="M10 4H2v16h20V6H12l-2-2z"/></svg>'
+              : '<svg viewBox="0 0 24 24"><path fill="#00ccff" d="M14 2H6v20h12V8l-4-6z"/></svg>'}
+            <p>${name}</p>
+            <div class="file-actions">
+              ${isDir ? '' : `<button onclick="downloadFile('${path}${name}')">Download</button>`}
+              <button onclick="openRenameModal('${name}')">Rename</button>
+              <button onclick="deleteFile('${path}${name}')">Delete</button>
+              ${isDir ? '' : `<button onclick="cutFile('${path}${name}')">Cut</button>`}
+              ${isDir ? '' : `<button onclick="copyFile('${path}${name}')">Copy</button>`}
+            </div>`;
+          card.onclick = e => {
+            if (e.target.tagName !== 'BUTTON' && isDir) listFiles(ip, path + name);
+          };
+          fileGrid.appendChild(card);
+        });
+      } catch (err) {
+        ps3Status.textContent = '⚠ Unable to fetch files. PS3 may not allow directory listing.';
+        console.error(err);
+      }
+    }
+
+    async function downloadFile(filePath) {
+      if (!ps3IP) return alert('No PS3 connected.');
+      window.open(`http://${ps3IP}${filePath}`, '_blank');
+    }
+
+    async function deleteFile(filePath) {
+      if (!ps3IP) return alert('No PS3 connected.');
+      if (!confirm(`Are you sure you want to delete ${filePath.split('/').pop()}?`)) return;
+      try {
+        const res = await fetch(`http://${ps3IP}/delete.ps3?${filePath}`, { method: 'GET' });
+        if (res.ok) {
+          alert('File deleted successfully.');
+          listFiles(ps3IP, currentPath);
+        } else {
+          throw new Error('Failed to delete file.');
+        }
+      } catch {
+        alert('Failed to delete file.');
+      }
+    }
+
+    let cutFilePath = null;
+    let copiedFilePath = null;
+
+    async function cutFile(filePath) {
+      if (!ps3IP) return alert('No PS3 connected.');
+      cutFilePath = filePath;
+      copiedFilePath = null;
+      alert(`File ${filePath.split('/').pop()} ready to move. Navigate to target directory and paste.`);
+    }
+
+    async function copyFile(filePath) {
+      if (!ps3IP) return alert('No PS3 connected.');
+      copiedFilePath = filePath;
+      cutFilePath = null;
+      alert(`File ${filePath.split('/').pop()} copied. Navigate to target directory and paste.`);
+    }
+
+    async function pasteFile() {
+      if (!ps3IP) return alert('No PS3 connected.');
+      if (!cutFilePath && !copiedFilePath) return alert('No file selected to paste.');
+      const filePath = cutFilePath || copiedFilePath;
+      const fileName = filePath.split('/').pop();
+      const action = cutFilePath ? 'move' : 'copy';
+      try {
+        const res = await fetch(`http://${ps3IP}/${action}.ps3?src=${filePath}&dst=${currentPath}${fileName}`, {
+          method: 'GET'
+        });
+        if (res.ok) {
+          alert(`File ${action}d successfully.`);
+          if (cutFilePath) cutFilePath = null;
+          listFiles(ps3IP, currentPath);
+        } else {
+          throw new Error(`Failed to ${action} file.`);
+        }
+      } catch {
+        alert(`Failed to ${action} file.`);
+      }
+    }
+
+    function openRenameModal(fileName) {
+      currentFile = fileName;
+      renameInput.value = fileName;
+      renameModal.style.display = 'flex';
+    }
+
+    function closeRenameModal() {
+      renameModal.style.display = 'none';
+      currentFile = null;
+      renameInput.value = '';
+    }
+
+    async function confirmRename() {
+      if (!ps3IP || !currentFile) return alert('No PS3 connected or file selected.');
+      const newName = renameInput.value.trim();
+      if (!newName) return alert('Please enter a valid file name.');
+      try {
+        const oldPath = `${currentPath}${currentFile}`;
+        const newPath = `${currentPath}${newName}`;
+        const res = await fetch(`http://${ps3IP}/rename.ps3?src=${oldPath}&dst=${newPath}`, {
+          method: 'GET'
+        });
+        if (res.ok) {
+          alert('File renamed successfully.');
+          closeRenameModal();
+          listFiles(ps3IP, currentPath);
+        } else {
+          throw new Error('Failed to rename file.');
+        }
+      } catch {
+        alert('Failed to rename file.');
+      }
+    }
+
+    function refreshFiles() {
+      if (ps3IP) listFiles(ps3IP, currentPath);
+      else detectPS3();
+    }
+
+    function goToParent() {
+      if (!ps3IP) return alert('No PS3 connected.');
+      const pathParts = currentPath.split('/').filter(Boolean);
+      pathParts.pop();
+      const parentPath = '/' + pathParts.join('/') + '/';
+      if (parentPath !== '//') listFiles(ps3IP, parentPath);
+    }
+
+    // 📤 Drag & Drop Upload
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (!ps3IP) return alert('No PS3 connected.');
+      [...files].forEach(file => uploadFile(file));
+    });
+
+    async function uploadFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch(`http://${ps3IP}/upload.ps3?dst=${currentPath}`, {
+          method: 'POST',
+          body: formData,
+        });
+        if (res.ok) {
+          alert(`✅ Uploaded: ${file.name}`);
+          listFiles(ps3IP, currentPath);
+        } else {
+          throw new Error('Failed to upload file.');
+        }
+      } catch {
+        alert(`❌ Failed to upload ${file.name}`);
+      }
+    }
+
+    // Add paste button to toolbar if a file is cut or copied
+    function updateToolbar() {
+      const pasteButton = document.querySelector('.toolbar button[data-action="paste"]');
+      if ((cutFilePath || copiedFilePath) && !pasteButton) {
+        const btn = document.createElement('button');
+        btn.textContent = 'Paste';
+        btn.dataset.action = 'paste';
+        btn.onclick = pasteFile;
+        document.querySelector('.toolbar').appendChild(btn);
+      } else if (!cutFilePath && !copiedFilePath && pasteButton) {
+        pasteButton.remove();
+      }
+    }
+
+    // Observe changes to cut/copied file
+    setInterval(updateToolbar, 1000);
+
+    detectPS3();
+  </script>
+</body>
+</html>

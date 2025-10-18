@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CellBreakers Desktop - Settings</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      color: white;
+    }
+    canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
+    .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 800px;}
+    h1 {font-size:2.5rem; letter-spacing:2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); margin-bottom:30px;}
+    .setting {background: rgba(0,0,0,0.6); padding:15px 20px; margin:10px 0; border-radius:8px; display:flex; justify-content: space-between; align-items:center;}
+    .setting label {font-size:1.1rem;}
+    select, button {padding:5px 10px; border-radius:5px; border:none;}
+    button {cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;}
+    button:hover {background:#00aaff;}
+    .color-options {display:flex; gap:10px; flex-wrap: wrap; margin-top:10px;}
+    .color-box {width:40px; height:40px; border-radius:5px; cursor:pointer; border:2px solid rgba(255,255,255,0.3); transition:0.3s;}
+    .color-box.selected {border-color:#fff;}
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <div class="container">
+    <h1>Settings</h1>
+    <div class="setting">
+      <label>Change Background</label>
+      <div class="color-options">
+        <div class="color-box" data-color="#00111a,#003366" style="background:linear-gradient(135deg, #00111a, #003366)"></div>
+        <div class="color-box" data-color="#330000,#660000" style="background:linear-gradient(135deg, #330000, #660000)"></div>
+        <div class="color-box" data-color="#003300,#006600" style="background:linear-gradient(135deg, #003300, #006600)"></div>
+        <div class="color-box" data-color="#330033,#660066" style="background:linear-gradient(135deg, #330033, #660066)"></div>
+        <div class="color-box" data-color="#666600,#cccc00" style="background:linear-gradient(135deg, #666600, #cccc00)"></div>
+        <div class="color-box" data-color="#666666,#aaaaaa" style="background:linear-gradient(135deg, #666666, #aaaaaa)"></div>
+      </div>
+    </div>
+    <div class="setting">
+      <label>Enable Particles</label>
+      <input type="checkbox" id="particlesToggle">
+    </div>
+    <div class="setting">
+      <label>Enable Animations</label>
+      <input type="checkbox" id="animationsToggle">
+    </div>
+	<div class="setting">
+	  <label>Enable Beta Updates</label>
+	  <input type="checkbox" id="BetaToggle">
+	 </div>
+    <div class="setting">
+      <label>UI Theme</label>
+      <select id="themeSelect">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
+    <div class="setting">
+      <label>Language</label>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="es">Spanish</option>
+      </select>
+    </div>
+    <div class="setting">
+      <button id="applyBtn">Apply</button>
+      <button id="restoreBtn">Restore Defaults</button>
+    </div>
+    <div class="setting">
+      <button onclick="window.location.href='index.html'">Back to Home</button>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+    const colorBoxes = document.querySelectorAll('.color-box');
+
+    function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    window.addEventListener('resize',resizeCanvas);resizeCanvas();
+
+    class Particle{
+      constructor(){
+        this.x=Math.random()*canvas.width;
+        this.y=Math.random()*canvas.height;
+        this.size=Math.random()*2+1;
+        this.speedX=(Math.random()-0.5)*0.5;
+        this.speedY=(Math.random()-0.5)*0.5;
+        this.color=['#00aaff','#0077ff','#003366'][Math.floor(Math.random()*3)];
+      }
+      update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>canvas.width)this.speedX*=-1;if(this.y<0||this.y>canvas.height)this.speedY*=-1;}
+      draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();}
+    }
+    function initParticles(){particlesArray=[];for(let i=0;i<80;i++){particlesArray.push(new Particle());}}
+    function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particlesArray.forEach(p=>{p.update();p.draw();});requestAnimationFrame(animateParticles);} 
+    initParticles();animateParticles();
+
+    // Load settings from localStorage
+    function loadSettings(){
+      const bg = localStorage.getItem('bg');
+      const particlesEnabled = localStorage.getItem('particles')==='true';
+      const animationsEnabled = localStorage.getItem('animations')==='true';
+      const betaEnabled = localStorage.getItem('beta')==='true';
+      const theme = localStorage.getItem('theme')||'dark';
+      const lang = localStorage.getItem('language')||'en';
+
+      if(bg){
+        document.body.style.background = `linear-gradient(135deg, ${bg})`;
+        colorBoxes.forEach(box=>{box.classList.remove('selected'); if(box.dataset.color===bg) box.classList.add('selected');});
+      }
+      document.getElementById('particlesToggle').checked = particlesEnabled;
+      document.getElementById('animationsToggle').checked = animationsEnabled;
+      document.getElementById('BetaToggle').checked = betaEnabled;
+      document.getElementById('themeSelect').value = theme;
+      document.getElementById('languageSelect').value = lang;
+    }
+
+    loadSettings();
+
+    colorBoxes.forEach(box=>{
+      box.addEventListener('click',()=>{
+        colorBoxes.forEach(b=>b.classList.remove('selected'));
+        box.classList.add('selected');
+      });
+    });
+
+    document.getElementById('applyBtn').addEventListener('click',()=>{
+      const selectedBg = document.querySelector('.color-box.selected')?.dataset.color;
+      if(selectedBg){
+        document.body.style.background = `linear-gradient(135deg, ${selectedBg})`;
+        localStorage.setItem('bg', selectedBg);
+      }
+      localStorage.setItem('particles',document.getElementById('particlesToggle').checked);
+      localStorage.setItem('animations',document.getElementById('animationsToggle').checked);
+      localStorage.setItem('beta',document.getElementById('BetaToggle').checked);
+      localStorage.setItem('theme',document.getElementById('themeSelect').value);
+      localStorage.setItem('language',document.getElementById('languageSelect').value);
+
+      if (document.getElementById('BetaToggle').checked) {
+        if (confirm('Beta Updates are enabled. Do you want to download the latest Beta Updates now?')) {
+          alert('Downloading Beta Updates... (This is a placeholder for actual download functionality)');
+          // Here you would add actual download logic, e.g., window.location.href = 'beta-download-url';
+        }
+      }
+
+      alert('Settings Applied!');
+    });
+
+    document.getElementById('restoreBtn').addEventListener('click',()=>{
+      localStorage.clear();
+      loadSettings();
+      alert('Defaults Restored!');
+    });
+  </script>
+</body>
+</html>
