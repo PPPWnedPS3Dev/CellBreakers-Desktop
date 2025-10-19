@@ -20,9 +20,24 @@
     canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
     .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 800px;}
     h1 {font-size:2.5rem; letter-spacing:2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); margin-bottom:30px;}
+
+    /* Auth Box */
+    .auth-box {
+      background: rgba(0,0,0,0.7); 
+      padding: 15px; 
+      border-radius: 8px; 
+      margin-bottom: 20px;
+      text-align:center;
+    }
+    .auth-box h2 {margin-bottom:10px;}
+    .auth-box button {
+      margin: 5px; padding: 5px 15px; border-radius:5px; border:none; cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;
+    }
+    .auth-box button:hover {background:#00aaff;}
+
     .setting {background: rgba(0,0,0,0.6); padding:15px 20px; margin:10px 0; border-radius:8px; display:flex; justify-content: space-between; align-items:center;}
     .setting label {font-size:1.1rem;}
-    select, button {padding:5px 10px; border-radius:5px; border:none;}
+    select, button, input[type="checkbox"] {padding:5px 10px; border-radius:5px; border:none;}
     button {cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;}
     button:hover {background:#00aaff;}
     .color-options {display:flex; gap:10px; flex-wrap: wrap; margin-top:10px;}
@@ -33,7 +48,23 @@
 <body>
   <canvas id="particles"></canvas>
   <div class="container">
+
+    <!-- Sign In / Sign Up Box -->
+    <div class="auth-box" id="authBox">
+      <h2>Welcome!</h2>
+      <div id="userProfile" style="display:none;">
+        <p id="userName"></p>
+        <button id="logoutBtn">Log Out</button>
+      </div>
+      <div id="authButtons">
+        <button id="signInBtn">Sign In</button>
+        <button id="signUpBtn">Sign Up</button>
+      </div>
+    </div>
+
     <h1>Settings</h1>
+
+    <!-- Settings -->
     <div class="setting">
       <label>Change Background</label>
       <div class="color-options">
@@ -53,10 +84,10 @@
       <label>Enable Animations</label>
       <input type="checkbox" id="animationsToggle">
     </div>
-	<div class="setting">
-	  <label>Enable Beta Updates</label>
-	  <input type="checkbox" id="BetaToggle">
-	 </div>
+    <div class="setting">
+      <label>Enable Beta Updates</label>
+      <input type="checkbox" id="BetaToggle">
+    </div>
     <div class="setting">
       <label>UI Theme</label>
       <select id="themeSelect">
@@ -81,7 +112,9 @@
       <button onclick="window.location.href='index.html'">Back to Home</button>
     </div>
   </div>
+
   <script>
+    // ================= Particles =================
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
     let particlesArray = [];
@@ -106,7 +139,7 @@
     function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particlesArray.forEach(p=>{p.update();p.draw();});requestAnimationFrame(animateParticles);} 
     initParticles();animateParticles();
 
-    // Load settings from localStorage
+    // ================= Settings =================
     function loadSettings(){
       const bg = localStorage.getItem('bg');
       const particlesEnabled = localStorage.getItem('particles')==='true';
@@ -125,7 +158,6 @@
       document.getElementById('themeSelect').value = theme;
       document.getElementById('languageSelect').value = lang;
     }
-
     loadSettings();
 
     colorBoxes.forEach(box=>{
@@ -149,19 +181,63 @@
 
       if (document.getElementById('BetaToggle').checked) {
         if (confirm('Beta Updates are enabled. Do you want to download the latest Beta Updates now?')) {
-          alert('Downloading Beta Updates... (This is a placeholder for actual download functionality)');
-          // Here you would add actual download logic, e.g., window.location.href = 'beta-download-url';
+          alert('Downloading Beta Updates... (This is a placeholder)');
         }
       }
-
       alert('Settings Applied!');
     });
 
     document.getElementById('restoreBtn').addEventListener('click',()=>{
       localStorage.clear();
       loadSettings();
+      loadUser(); // restore user info if exists
       alert('Defaults Restored!');
     });
+
+    // ================= Auth System =================
+    const authBox = document.getElementById('authBox');
+    const authButtons = document.getElementById('authButtons');
+    const userProfile = document.getElementById('userProfile');
+    const userNameDisplay = document.getElementById('userName');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function loadUser() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        authButtons.style.display = 'none';
+        userProfile.style.display = 'block';
+        userNameDisplay.textContent = `Hello, ${user.name}`;
+      } else {
+        authButtons.style.display = 'block';
+        userProfile.style.display = 'none';
+      }
+    }
+
+    document.getElementById('signInBtn').addEventListener('click', () => {
+      const name = prompt('Enter your username to Sign In:');
+      if (name) {
+        localStorage.setItem('user', JSON.stringify({ name }));
+        loadUser();
+        alert('Signed In!');
+      }
+    });
+
+    document.getElementById('signUpBtn').addEventListener('click', () => {
+      const name = prompt('Enter your username to Sign Up:');
+      if (name) {
+        localStorage.setItem('user', JSON.stringify({ name }));
+        loadUser();
+        alert('Signed Up!');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('user');
+      loadUser();
+      alert('Logged Out!');
+    });
+
+    loadUser();
   </script>
 </body>
 </html>
