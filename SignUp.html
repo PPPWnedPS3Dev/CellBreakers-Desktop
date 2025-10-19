@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - CellBreakers</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      color: white;
+    }
+    canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
+    .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 500px; background: rgba(0,0,0,0.6); padding: 30px; border-radius: 10px;}
+    h1 {font-size:2rem; margin-bottom:20px; text-shadow: 0 0 10px rgba(0,0,0,0.7);}
+    .input-group {margin: 15px 0; text-align:left;}
+    .btn {padding:10px 20px; border:none; border-radius:5px; cursor:pointer; margin-top:10px; font-weight:bold;}
+    .back-home {margin-top:20px; display:block; color:#00aaff; cursor:pointer; text-decoration:none;}
+    #user-info {margin-top:20px; text-align:center;}
+    #user-info img {width:60px; height:60px; border-radius:50%; margin-bottom:10px;}
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <div class="container">
+    <h1>Sign Up</h1>
+
+    <!-- Google Sign Up -->
+    <div class="input-group" id="gSignInBtn"></div>
+
+    <div class="input-group">
+      <button class="btn" onclick="alert('Phone Sign Up Placeholder')">Sign Up with Phone</button>
+    </div>
+    <div class="input-group">
+      <button class="btn" onclick="alert('Other Sign Up Placeholder')">Sign Up with Email</button>
+    </div>
+
+    <a class="back-home" href="settings.html">Back to Settings</a>
+
+    <div id="user-info"></div>
+  </div>
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <script>
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let particlesArray = [];
+    function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+    window.addEventListener('resize',resizeCanvas);resizeCanvas();
+
+    class Particle{
+      constructor(){
+        this.x=Math.random()*canvas.width;
+        this.y=Math.random()*canvas.height;
+        this.size=Math.random()*2+1;
+        this.speedX=(Math.random()-0.5)*0.5;
+        this.speedY=(Math.random()-0.5)*0.5;
+        this.color=['#00aaff','#0077ff','#003366'][Math.floor(Math.random()*3)];
+      }
+      update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>canvas.width)this.speedX*=-1;if(this.y<0||this.y>canvas.height)this.speedY*=-1;}
+      draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();}
+    }
+    function initParticles(){particlesArray=[];for(let i=0;i<80;i++){particlesArray.push(new Particle());}}
+    function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particlesArray.forEach(p=>{p.update();p.draw();});requestAnimationFrame(animateParticles);} 
+    initParticles();animateParticles();
+
+    // Google OAuth
+    function handleCredentialResponse(response) {
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const user = JSON.parse(decodeURIComponent(atob(base64).split('').map(c=> '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+      
+      // Show user info
+      const userInfoDiv = document.getElementById('user-info');
+      userInfoDiv.innerHTML = `
+        <img src="${user.picture}" alt="Profile Picture">
+        <p>${user.name}</p>
+        <p>${user.email}</p>
+      `;
+    }
+
+    window.onload = function() {
+      google.accounts.id.initialize({
+        client_id: '519459352297-sgpjd2gjvoe810tfaj05oopqj79kr8jt.apps.googleusercontent.com',
+        callback: handleCredentialResponse
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById('gSignInBtn'),
+        { theme: 'outline', size: 'large', text: 'continue_with' }
+      );
+
+      google.accounts.id.prompt(); // One Tap sign in
+    }
+  </script>
+</body>
+</html>
