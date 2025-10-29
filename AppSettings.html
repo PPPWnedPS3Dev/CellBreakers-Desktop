@@ -85,10 +85,6 @@
       <input type="checkbox" id="animationsToggle">
     </div>
     <div class="setting">
-      <label>Enable Beta Updates</label>
-      <input type="checkbox" id="BetaToggle">
-    </div>
-    <div class="setting">
       <label>UI Theme</label>
       <select id="themeSelect">
         <option value="dark">Dark</option>
@@ -178,14 +174,6 @@
       localStorage.setItem('beta',document.getElementById('BetaToggle').checked);
       localStorage.setItem('theme',document.getElementById('themeSelect').value);
       localStorage.setItem('language',document.getElementById('languageSelect').value);
-
-      if (document.getElementById('BetaToggle').checked) {
-        if (confirm('Beta Updates are enabled. Do you want to download the latest Beta Updates now?')) {
-          alert('Downloading Beta Updates... (This is a placeholder)');
-        }
-      }
-      alert('Settings Applied!');
-    });
 
     document.getElementById('restoreBtn').addEventListener('click',()=>{
       localStorage.clear();
