@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CellBreakers Desktop - Mini Dock for PS3 Tools</title>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      position: relative;
+      color: white;
+    }
+    body.light {
+      color: black;
+    }
+    canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
+    .dock {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: flex;
+      gap: 20px;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+    .dock.light {
+      background: rgba(255,255,255,0.7);
+    }
+    .dock-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.3s;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .dock-item:hover {
+      background: rgba(255,255,255,0.2);
+      transform: scale(1.05);
+    }
+    .dock-item.light:hover {
+      background: rgba(0,0,0,0.2);
+    }
+    .dock-icon {
+      width: 40px;
+      height: 40px;
+      background: #0077ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+    .dock-label {
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    h1 {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <h1>Mini Dock for PS3 Tools</h1>
+  <div class="dock" id="dock">
+    <div class="dock-item" onclick="window.open('https://www.psx-place.com/resources/trueancestor-pkg-repacker-by-jjkkyu.31/', '_blank')">
+      <div class="dock-icon">📦</div>
+      <div class="dock-label">PKG Extractor</div>
+    </div>
+    <div class="dock-item" onclick="window.open('https://www.psx-place.com/resources/puad-gui.488/', '_blank')">
+      <div class="dock-icon">🔧</div>
+      <div class="dock-label">PUP Tools</div>
+    </div>
+    <div class="dock-item" onclick="window.open('https://ps3xploit.me/', '_blank')">
+      <div class="dock-icon">⚡</div>
+      <div class="dock-label">PS3xploit</div>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('particles');
+    let enableParticles = false;
+
+    function initParticles() {
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 2 + 1,
+          vx: Math.random() * 2 - 1,
+          vy: Math.random() * 2 - 1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!enableParticles) {
+          requestAnimationFrame(draw);
+          return;
+        }
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+          if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    function applyDisplayMode(mode, bg) {
+      let background = bg;
+      if (mode !== 'original') {
+        if (mode === 'dark') {
+          background = '#111111,#333333';
+        } else if (mode === 'oled') {
+          background = '#000000,#000000';
+        }
+      }
+      document.body.style.background = background.includes(',') ? `linear-gradient(135deg, ${background})` : background;
+    }
+
+    function applyUITheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light');
+        document.getElementById('dock').classList.add('light');
+      } else {
+        document.body.classList.remove('light');
+        document.getElementById('dock').classList.remove('light');
+      }
+    }
+
+    function applyParticles(enabled) {
+      enableParticles = enabled;
+      canvas.style.display = enabled ? 'block' : 'none';
+    }
+
+    function loadSettings() {
+      const settings = window.settingsAPI.load() || {};
+      applyUITheme(settings.theme ?? 'dark');
+      applyDisplayMode(settings.displayMode ?? 'original', settings.bg ?? '#00111a,#003366');
+      applyParticles(settings.particles ?? true);
+    }
+
+    initParticles();
+    loadSettings();
+  </script>
+</body>
+</html>

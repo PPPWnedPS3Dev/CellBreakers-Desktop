@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CellBreakers Desktop - Settings</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     * {margin:0; padding:0; box-sizing:border-box;}
     body {
@@ -17,55 +18,33 @@
       position: relative;
       color: white;
     }
+    body.light {
+      color: black;
+    }
     canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
     .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 800px;}
     h1 {font-size:2.5rem; letter-spacing:2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); margin-bottom:30px;}
-
-    /* Auth Box */
-    .auth-box {
-      background: rgba(0,0,0,0.7); 
-      padding: 15px; 
-      border-radius: 8px; 
-      margin-bottom: 20px;
-      text-align:center;
-    }
-    .auth-box h2 {margin-bottom:10px;}
-    .auth-box button {
-      margin: 5px; padding: 5px 15px; border-radius:5px; border:none; cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;
-    }
-    .auth-box button:hover {background:#00aaff;}
-
     .setting {background: rgba(0,0,0,0.6); padding:15px 20px; margin:10px 0; border-radius:8px; display:flex; justify-content: space-between; align-items:center;}
+    .setting.light {background: rgba(255,255,255,0.6);}
     .setting label {font-size:1.1rem;}
-    select, button, input[type="checkbox"] {padding:5px 10px; border-radius:5px; border:none;}
+    select, button, input {padding:5px 10px; border-radius:5px; border:none;}
     button {cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;}
     button:hover {background:#00aaff;}
+    button.light {color: black;}
     .color-options {display:flex; gap:10px; flex-wrap: wrap; margin-top:10px;}
     .color-box {width:40px; height:40px; border-radius:5px; cursor:pointer; border:2px solid rgba(255,255,255,0.3); transition:0.3s;}
     .color-box.selected {border-color:#fff;}
+    .plugin-list {display: flex; flex-direction: column; gap: 10px;}
+    .plugin-item {display: flex; justify-content: space-between; align-items: center;}
+    .plugin-form {display: flex; flex-direction: column; gap: 10px; margin-top: 20px;}
+    .plugin-form input {margin-bottom: 10px;}
   </style>
 </head>
 <body>
   <canvas id="particles"></canvas>
   <div class="container">
-
-    <!-- Sign In / Sign Up Box -->
-    <div class="auth-box" id="authBox">
-      <h2>Welcome!</h2>
-      <div id="userProfile" style="display:none;">
-        <p id="userName"></p>
-        <button id="logoutBtn">Log Out</button>
-      </div>
-      <div id="authButtons">
-        <button id="signInBtn">Sign In</button>
-        <button id="signUpBtn">Sign Up</button>
-      </div>
-    </div>
-
     <h1>Settings</h1>
-
-    <!-- Settings -->
-    <div class="setting">
+    <div class="setting" id="backgroundSetting">
       <label>Change Background</label>
       <div class="color-options">
         <div class="color-box" data-color="#00111a,#003366" style="background:linear-gradient(135deg, #00111a, #003366)"></div>
@@ -85,6 +64,10 @@
       <input type="checkbox" id="animationsToggle">
     </div>
     <div class="setting">
+      <label>Enable Beta Updates</label>
+      <input type="checkbox" id="BetaToggle">
+    </div>
+    <div class="setting">
       <label>UI Theme</label>
       <select id="themeSelect">
         <option value="dark">Dark</option>
@@ -101,131 +84,358 @@
       </select>
     </div>
     <div class="setting">
+      <label>Toggle Offline Mode</label>
+      <input type="checkbox" id="OfflineToggle">
+    </div>
+    <div class="setting">
+      <label>Display Mode</label>
+      <select id="displayModeSelect">
+        <option value="oled">OLED Ultra Black Mode</option>
+        <option value="dark">Dark Mode</option>
+        <option value="original">Original Theme</option>
+      </select>
+    </div>
+    <div class="setting">
+      <label>Plugins Management</label>
+    </div>
+    <div class="setting plugin-list" id="pluginList">
+      <!-- Plugin items will be added here -->
+    </div>
+    <div class="setting">
+      <button id="installPluginBtn">Install Plugin</button>
+    </div>
+    <div class="setting">
       <button id="applyBtn">Apply</button>
       <button id="restoreBtn">Restore Defaults</button>
     </div>
     <div class="setting">
       <button onclick="window.location.href='index.html'">Back to Home</button>
     </div>
+    <div class="setting" id="updateSetting">
+      <label>Updates</label>
+      <button id="checkUpdateBtn">Check for Updates</button>
+      <div id="updateInfo" style="margin-top:10px;"></div>
+    </div>
   </div>
-
   <script>
-    // ================= Particles =================
     const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
-    let particlesArray = [];
+    let enableParticles = false;
+
+    function initParticles() {
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 2 + 1,
+          vx: Math.random() * 2 - 1,
+          vy: Math.random() * 2 - 1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!enableParticles) {
+          requestAnimationFrame(draw);
+          return;
+        }
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+          if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
     const colorBoxes = document.querySelectorAll('.color-box');
+    const settingsElements = document.querySelectorAll('.setting');
 
-    function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-    window.addEventListener('resize',resizeCanvas);resizeCanvas();
-
-    class Particle{
-      constructor(){
-        this.x=Math.random()*canvas.width;
-        this.y=Math.random()*canvas.height;
-        this.size=Math.random()*2+1;
-        this.speedX=(Math.random()-0.5)*0.5;
-        this.speedY=(Math.random()-0.5)*0.5;
-        this.color=['#00aaff','#0077ff','#003366'][Math.floor(Math.random()*3)];
+    function applyDisplayMode(mode) {
+      const backgroundSetting = document.getElementById('backgroundSetting');
+      let bg;
+      if (mode !== 'original') {
+        backgroundSetting.style.display = 'none';
+        if (mode === 'dark') {
+          bg = '#111111,#333333';
+        } else if (mode === 'oled') {
+          bg = '#000000,#000000';
+        }
+      } else {
+        backgroundSetting.style.display = 'flex';
+        const selectedBg = document.querySelector('.color-box.selected')?.dataset.color || '#00111a,#003366';
+        bg = selectedBg;
       }
-      update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>canvas.width)this.speedX*=-1;if(this.y<0||this.y>canvas.height)this.speedY*=-1;}
-      draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();}
+      document.body.style.background = bg.includes(',') ? `linear-gradient(135deg, ${bg})` : bg;
     }
-    function initParticles(){particlesArray=[];for(let i=0;i<80;i++){particlesArray.push(new Particle());}}
-    function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particlesArray.forEach(p=>{p.update();p.draw();});requestAnimationFrame(animateParticles);} 
-    initParticles();animateParticles();
 
-    // ================= Settings =================
-    function loadSettings(){
-      const bg = localStorage.getItem('bg');
-      const particlesEnabled = localStorage.getItem('particles')==='true';
-      const animationsEnabled = localStorage.getItem('animations')==='true';
-      const betaEnabled = localStorage.getItem('beta')==='true';
-      const theme = localStorage.getItem('theme')||'dark';
-      const lang = localStorage.getItem('language')||'en';
-
-      if(bg){
-        document.body.style.background = `linear-gradient(135deg, ${bg})`;
-        colorBoxes.forEach(box=>{box.classList.remove('selected'); if(box.dataset.color===bg) box.classList.add('selected');});
+    function applyUITheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light');
+        settingsElements.forEach(el => el.classList.add('light'));
+      } else {
+        document.body.classList.remove('light');
+        settingsElements.forEach(el => el.classList.remove('light'));
       }
-      document.getElementById('particlesToggle').checked = particlesEnabled;
-      document.getElementById('animationsToggle').checked = animationsEnabled;
-      document.getElementById('BetaToggle').checked = betaEnabled;
-      document.getElementById('themeSelect').value = theme;
-      document.getElementById('languageSelect').value = lang;
     }
-    loadSettings();
 
-    colorBoxes.forEach(box=>{
-      box.addEventListener('click',()=>{
-        colorBoxes.forEach(b=>b.classList.remove('selected'));
+    function applyParticles(enabled) {
+      enableParticles = enabled;
+      canvas.style.display = enabled ? 'block' : 'none';
+    }
+
+    function loadSettings() {
+      const settings = getSettings();
+      document.getElementById('particlesToggle').checked = settings.particles ?? true;
+      document.getElementById('animationsToggle').checked = settings.animations ?? true;
+      document.getElementById('BetaToggle').checked = settings.beta ?? false;
+      document.getElementById('themeSelect').value = settings.theme ?? 'dark';
+      document.getElementById('languageSelect').value = settings.language ?? 'en';
+      document.getElementById('OfflineToggle').checked = settings.offline ?? false;
+      document.getElementById('displayModeSelect').value = settings.displayMode ?? 'original';
+
+      applyUITheme(settings.theme ?? 'dark');
+      applyDisplayMode(settings.displayMode ?? 'original');
+
+      // Select the correct color box if original
+      if (settings.displayMode === 'original') {
+        const bg = settings.bg ?? '#00111a,#003366';
+        colorBoxes.forEach(box => {
+          box.classList.remove('selected');
+          if (box.dataset.color === bg) box.classList.add('selected');
+        });
+      }
+
+      applyParticles(settings.particles ?? true);
+    }
+
+    // Preview changes on select/change
+    document.getElementById('displayModeSelect').addEventListener('change', function() {
+      applyDisplayMode(this.value);
+    });
+
+    document.getElementById('themeSelect').addEventListener('change', function() {
+      applyUITheme(this.value);
+    });
+
+    document.getElementById('particlesToggle').addEventListener('change', function() {
+      applyParticles(this.checked);
+    });
+
+    colorBoxes.forEach(box => {
+      box.addEventListener('click', () => {
+        colorBoxes.forEach(b => b.classList.remove('selected'));
         box.classList.add('selected');
+        // Preview background if original mode
+        if (document.getElementById('displayModeSelect').value === 'original') {
+          const bg = box.dataset.color;
+          document.body.style.background = `linear-gradient(135deg, ${bg})`;
+        }
       });
     });
 
-    document.getElementById('applyBtn').addEventListener('click',()=>{
-      const selectedBg = document.querySelector('.color-box.selected')?.dataset.color;
-      if(selectedBg){
-        document.body.style.background = `linear-gradient(135deg, ${selectedBg})`;
-        localStorage.setItem('bg', selectedBg);
+    document.getElementById('applyBtn').addEventListener('click', () => {
+      const settings = getSettings();
+      const mode = document.getElementById('displayModeSelect').value;
+      if (mode === 'original') {
+        const selectedBg = document.querySelector('.color-box.selected')?.dataset.color;
+        settings.bg = selectedBg ?? '#00111a,#003366';
       }
-      localStorage.setItem('particles',document.getElementById('particlesToggle').checked);
-      localStorage.setItem('animations',document.getElementById('animationsToggle').checked);
-      localStorage.setItem('beta',document.getElementById('BetaToggle').checked);
-      localStorage.setItem('theme',document.getElementById('themeSelect').value);
-      localStorage.setItem('language',document.getElementById('languageSelect').value);
+      settings.particles = document.getElementById('particlesToggle').checked;
+      settings.animations = document.getElementById('animationsToggle').checked;
+      settings.beta = document.getElementById('BetaToggle').checked;
+      settings.theme = document.getElementById('themeSelect').value;
+      settings.language = document.getElementById('languageSelect').value;
+      settings.offline = document.getElementById('OfflineToggle').checked;
+      settings.displayMode = mode;
+      saveSettings(settings);
+      loadSettings(); // Reapply from saved
+      if (settings.beta && confirm('Beta Updates enabled. Download latest beta?')) {
+        alert('Downloading Beta Updates... (placeholder)');
+      }
+      alert('Settings Applied!');
+    });
 
-    document.getElementById('restoreBtn').addEventListener('click',()=>{
-      localStorage.clear();
+    document.getElementById('restoreBtn').addEventListener('click', () => {
+      const defaultSettings = {
+        bg: "#00111a,#003366",
+        particles: true,
+        animations: true,
+        beta: false,
+        theme: "dark",
+        language: "en",
+        offline: false,
+        displayMode: "original"
+      };
+      saveSettings(defaultSettings);
       loadSettings();
-      loadUser(); // restore user info if exists
       alert('Defaults Restored!');
     });
 
-    // ================= Auth System =================
-    const authBox = document.getElementById('authBox');
-    const authButtons = document.getElementById('authButtons');
-    const userProfile = document.getElementById('userProfile');
-    const userNameDisplay = document.getElementById('userName');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    function loadUser() {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (user) {
-        authButtons.style.display = 'none';
-        userProfile.style.display = 'block';
-        userNameDisplay.textContent = `Hello, ${user.name}`;
-      } else {
-        authButtons.style.display = 'block';
-        userProfile.style.display = 'none';
+    // --- GitHub Update Check ---
+    const checkBtn = document.getElementById('checkUpdateBtn');
+    const updateInfo = document.getElementById('updateInfo');
+    checkBtn.addEventListener('click', async () => {
+      updateInfo.textContent = 'Checking for updates...';
+      const result = await window.updateAPI.check();
+      if (result.error) {
+        updateInfo.textContent = 'Error: ' + result.error;
+        return;
       }
+      const latestVersion = result.tag_name;
+      const currentVersion = 'Alpha 1';
+      if (latestVersion !== currentVersion) {
+        updateInfo.innerHTML = `
+          New version available: ${latestVersion} <br>
+          <a href="${result.html_url}" target="_blank">Download</a>
+          <pre>${result.body}</pre>
+        `;
+      } else {
+        updateInfo.textContent = 'You are on the latest version.';
+      }
+    });
+
+    // Plugin Management
+    function getSettings() {
+      return localStorage.getItem('settings') ? JSON.parse(localStorage.getItem('settings')) : {};
     }
 
-    document.getElementById('signInBtn').addEventListener('click', () => {
-      const name = prompt('Enter your username to Sign In:');
-      if (name) {
-        localStorage.setItem('user', JSON.stringify({ name }));
-        loadUser();
-        alert('Signed In!');
-      }
+    function saveSettings(settings) {
+      localStorage.setItem('settings', JSON.stringify(settings));
+    }
+
+    function getPlugins() {
+      return localStorage.getItem('plugins') ? JSON.parse(localStorage.getItem('plugins')) : [];
+    }
+
+    function savePlugins(plugins) {
+      localStorage.setItem('plugins', JSON.stringify(plugins));
+    }
+
+    function loadPlugins() {
+      const pluginList = document.getElementById('pluginList');
+      pluginList.innerHTML = '';
+      const plugins = getPlugins();
+      plugins.forEach((plugin, index) => {
+        const item = document.createElement('div');
+        item.classList.add('plugin-item');
+        item.innerHTML = `
+          <span>${plugin.name}</span>
+          <button onclick="removePlugin(${index})">Remove</button>
+        `;
+        pluginList.appendChild(item);
+      });
+    }
+
+    window.removePlugin = function(index) {
+      let plugins = getPlugins();
+      plugins.splice(index, 1);
+      savePlugins(plugins);
+      loadPlugins();
+    }
+
+    document.getElementById('installPluginBtn').addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.cbplugin';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const zip = await JSZip.loadAsync(event.target.result);
+            const manifestFile = zip.file('manifest.json');
+            if (!manifestFile) {
+              alert('Missing manifest.json in plugin');
+              return;
+            }
+            const manifestContent = await manifestFile.async('text');
+            const manifest = JSON.parse(manifestContent);
+
+            let plugins = getPlugins();
+
+            // Handle different plugin types
+            if (manifest.type === 'link') {
+              // Custom link
+              const pluginData = {
+                name: manifest.name,
+                icon: manifest.icon || '🔌',
+                url: manifest.url,
+                external: manifest.external ?? true
+              };
+              plugins.push(pluginData);
+            } else if (manifest.type === 'homebrew') {
+              // Custom JSON homebrew list
+              const jsonFile = zip.file(manifest.jsonFile || 'list.json');
+              if (!jsonFile) {
+                alert('Missing homebrew JSON file');
+                return;
+              }
+              const jsonContent = await jsonFile.async('text');
+              localStorage.setItem(`homebrew_${manifest.name}`, jsonContent);
+              const pluginData = {
+                name: manifest.name,
+                type: 'homebrew'
+              };
+              plugins.push(pluginData);
+            } else if (manifest.type === 'ui') {
+              // Custom UI module - future-proof, store HTML/JS
+              const htmlFile = zip.file(manifest.htmlFile || 'module.html');
+              const jsFile = zip.file(manifest.jsFile || 'module.js');
+              if (!htmlFile) {
+                alert('Missing HTML file for UI module');
+                return;
+              }
+              const htmlContent = await htmlFile.async('text');
+              let jsContent = '';
+              if (jsFile) {
+                jsContent = await jsFile.async('text');
+              }
+              localStorage.setItem(`ui_${manifest.name}_html`, htmlContent);
+              localStorage.setItem(`ui_${manifest.name}_js`, jsContent);
+              const pluginData = {
+                name: manifest.name,
+                type: 'ui',
+                page: `plugin_${manifest.name}.html` // Placeholder for dynamic page
+              };
+              plugins.push(pluginData);
+              // For future: create dynamic page or load in iframe
+            } else {
+              alert('Unsupported plugin type');
+              return;
+            }
+
+            savePlugins(plugins);
+            alert('Plugin installed successfully!');
+            loadPlugins();
+          } catch (error) {
+            alert('Error installing plugin: ' + error.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      };
+      input.click();
     });
 
-    document.getElementById('signUpBtn').addEventListener('click', () => {
-      const name = prompt('Enter your username to Sign Up:');
-      if (name) {
-        localStorage.setItem('user', JSON.stringify({ name }));
-        loadUser();
-        alert('Signed Up!');
-      }
-    });
-
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('user');
-      loadUser();
-      alert('Logged Out!');
-    });
-
-    loadUser();
+    initParticles();
+    loadSettings();
+    loadPlugins();
   </script>
 </body>
 </html>

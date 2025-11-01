@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CellBreakers Desktop - Built-in PS3 File Hash Checker</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      color: white;
+    }
+    body.light {
+      color: black;
+    }
+    canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
+    .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 800px;}
+    h1 {font-size:2.5rem; letter-spacing:2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); margin-bottom:30px;}
+    .setting {background: rgba(0,0,0,0.6); padding:15px 20px; margin:10px 0; border-radius:8px; display:flex; justify-content: space-between; align-items:center;}
+    .setting.light {background: rgba(255,255,255,0.6);}
+    .setting label {font-size:1.1rem;}
+    select, button, input[type="file"], input[type="text"] {padding:5px 10px; border-radius:5px; border:none;}
+    button {cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;}
+    button:hover {background:#00aaff;}
+    button.light {color: black;}
+    #result {margin-top: 20px; word-break: break-all; text-align: left; white-space: pre-wrap;}
+    #progress {margin-top: 10px; display: none;}
+    #progress-bar {width: 100%; background: #ddd; height: 10px; margin-top: 5px;}
+    #progress-fill {width: 0; height: 100%; background: #0077ff; transition: width 0.3s;}
+    #note {font-size: 0.9rem; margin-bottom: 20px;}
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <div class="container">
+    <h1>Built-in PS3 File Hash Checker</h1>
+    <p id="note">Select a file or folder to compute hashes. Useful for verifying PS3 firmware (PUP), packages (PKG), and jailbreak (JB) folders.</p>
+    <div class="setting">
+      <label>Select File/Folder</label>
+      <input type="file" id="fileInput" webkitdirectory multiple>
+    </div>
+    <div class="setting">
+      <label>Hash Algorithm</label>
+      <select id="algoSelect">
+        <option value="MD5" selected>MD5</option>
+        <option value="SHA-1">SHA-1</option>
+        <option value="SHA-256">SHA-256</option>
+        <option value="SHA-512">SHA-512</option>
+        <option value="SHA-384">SHA-384</option>
+      </select>
+    </div>
+    <div class="setting">
+      <label>Expected Hash (for single file)</label>
+      <input type="text" id="expectedHash">
+    </div>
+    <div class="setting">
+      <button id="computeBtn">Compute Hash</button>
+    </div>
+    <div id="progress">
+      <label>Progress:</label>
+      <div id="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+    <div class="setting" id="resultSetting" style="display: none; flex-direction: column; align-items: flex-start;">
+      <label>Hash Result</label>
+      <pre id="result"></pre>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('particles');
+    let enableParticles = false;
+
+    function initParticles() {
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+      for (let i = 0; i < 100; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 2 + 1,
+          vx: Math.random() * 2 - 1,
+          vy: Math.random() * 2 - 1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!enableParticles) {
+          requestAnimationFrame(draw);
+          return;
+        }
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+          if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    const settingsElements = document.querySelectorAll('.setting');
+
+    function applyDisplayMode(mode, bg) {
+      let background = bg;
+      if (mode !== 'original') {
+        if (mode === 'dark') {
+          background = '#111111,#333333';
+        } else if (mode === 'oled') {
+          background = '#000000,#000000';
+        }
+      }
+      document.body.style.background = background.includes(',') ? `linear-gradient(135deg, ${background})` : background;
+    }
+
+    function applyUITheme(theme) {
+      if (theme === 'light') {
+        document.body.classList.add('light');
+        settingsElements.forEach(el => el.classList.add('light'));
+      } else {
+        document.body.classList.remove('light');
+        settingsElements.forEach(el => el.classList.remove('light'));
+      }
+    }
+
+    function applyParticles(enabled) {
+      enableParticles = enabled;
+      canvas.style.display = enabled ? 'block' : 'none';
+    }
+
+    function loadSettings() {
+      const settings = window.settingsAPI.load() || {};
+      applyUITheme(settings.theme ?? 'dark');
+      applyDisplayMode(settings.displayMode ?? 'original', settings.bg ?? '#00111a,#003366');
+      applyParticles(settings.particles ?? true);
+    }
+
+    async function hashFile(file, algo) {
+      const chunkSize = 1024 * 1024; // 1MB
+      let hasher;
+      switch (algo) {
+        case 'MD5':
+          hasher = CryptoJS.algo.MD5.create();
+          break;
+        case 'SHA-1':
+          hasher = CryptoJS.algo.SHA1.create();
+          break;
+        case 'SHA-256':
+          hasher = CryptoJS.algo.SHA256.create();
+          break;
+        case 'SHA-512':
+          hasher = CryptoJS.algo.SHA512.create();
+          break;
+        case 'SHA-384':
+          hasher = CryptoJS.algo.SHA384.create();
+          break;
+        default:
+          throw new Error('Unsupported algorithm');
+      }
+      let offset = 0;
+      while (offset < file.size) {
+        const blob = file.slice(offset, offset + chunkSize);
+        const buffer = await blob.arrayBuffer();
+        hasher.update(CryptoJS.lib.WordArray.create(new Uint8Array(buffer)));
+        offset += buffer.byteLength;
+      }
+      return hasher.finalize().toString(CryptoJS.enc.Hex);
+    }
+
+    document.getElementById('computeBtn').addEventListener('click', async () => {
+      const fileInput = document.getElementById('fileInput');
+      const files = Array.from(fileInput.files);
+      if (!files.length) {
+        alert('Please select a file or folder.');
+        return;
+      }
+      const algo = document.getElementById('algoSelect').value;
+      const expected = document.getElementById('expectedHash')?.value.trim().toLowerCase();
+      const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+      let loaded = 0;
+      const results = [];
+      const progress = document.getElementById('progress');
+      const progressFill = document.getElementById('progress-fill');
+      const resultSetting = document.getElementById('resultSetting');
+      const result = document.getElementById('result');
+
+      progress.style.display = 'block';
+      progressFill.style.width = '0%';
+
+      try {
+        for (const file of files) {
+          if (file.size === 0) continue; // Skip empty files/directories
+          const relativePath = file.webkitRelativePath || file.name;
+          const hash = await hashFile(file, algo);
+          results.push(`${algo} (${relativePath}): ${hash}`);
+          if (expected && files.length === 1 && hash.toLowerCase() === expected) {
+            results.push('Matches expected hash: Yes');
+          } else if (expected && files.length === 1) {
+            results.push('Matches expected hash: No');
+          }
+          loaded += file.size;
+          progressFill.style.width = `${(loaded / totalSize) * 100}%`;
+        }
+        result.textContent = results.join('\n');
+        resultSetting.style.display = 'block';
+      } catch (error) {
+        alert('Error computing hash: ' + error.message);
+      } finally {
+        progress.style.display = 'none';
+      }
+    });
+
+    initParticles();
+    loadSettings();
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading CellBreakers Desktop</title>
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#00111a,#003366);color:white;font-family:'Segoe UI',sans-serif;}
+    .container{text-align:center;}
+    .logo{width:120px;height:120px;margin-bottom:20px;background:url('assets/icon.png') no-repeat center/contain;animation:bounce 1.5s infinite;}
+    h1{font-size:2rem;text-shadow:0 0 10px rgba(0,0,0,0.7);}
+    .loading{margin-top:10px;}
+    .version{position:absolute;bottom:10px;left:10px;font-size:0.9rem;color:rgba(255,255,255,0.7);}
+    @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-15px);}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"></div>
+    <h1>CellBreakers Desktop</h1>
+    <div class="loading">Loading...</div>
+    <div class="version">App Version: Alpha 2</div>
+  </div>
+</body>
+</html>

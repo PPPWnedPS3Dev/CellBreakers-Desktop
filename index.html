@@ -17,6 +17,9 @@
       position: relative;
       color: white;
     }
+    body.light {
+      color: black;
+    }
     canvas#particles {position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;}
     .container {position: relative; z-index: 1; text-align: center;}
     h1 {font-size: 2.5rem; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); animation: fadeIn 1.5s ease-in-out;}
@@ -25,10 +28,12 @@
     @keyframes appear {to {opacity:1;}}
     .hamburger {position: absolute; top: 20px; right: 20px; width: 30px; height: 22px; cursor: pointer; z-index: 2;}
     .bar {width: 100%; height: 4px; background: white; margin: 4px 0; border-radius: 2px; transition: 0.4s;}
+    body.light .bar {background: black;}
     .hamburger.active .bar:nth-child(1) {transform: translateY(8px) rotate(45deg);}
     .hamburger.active .bar:nth-child(2) {opacity: 0;}
     .hamburger.active .bar:nth-child(3) {transform: translateY(-8px) rotate(-45deg);}
     .sidebar {position: fixed; top: 0; left: -250px; width: 250px; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); transition: left 0.4s ease; padding-top: 60px; z-index: 1; overflow-y: auto; overflow-x: hidden;}
+    .sidebar.light {background: rgba(255,255,255,0.85);}
     .sidebar::-webkit-scrollbar {width: 6px;}
     .sidebar::-webkit-scrollbar-thumb {background-color: rgba(255,255,255,0.2); border-radius: 3px;}
     .sidebar.active {left: 0;}
@@ -37,6 +42,73 @@
     .sidebar li:hover {background: rgba(255,255,255,0.1);}
     .divider {height: 1px; background: rgba(255,255,255,0.2); margin: 15px 0;}
     svg {width: 20px; height: 20px; fill: white;}
+    body.light svg {fill: black;}
+   
+    /* Update Popup Styles */
+    .update-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7); /* Semi-transparent overlay */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      z-index: 10; /* Above other elements */
+    }
+    .update-popup.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .update-box {
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px); /* Matches sidebar blur effect */
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.5s ease-out;
+    }
+    .update-box h2 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+    .update-box p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .update-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .update-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background: #0077ff; /* Matches particle colors */
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .update-buttons button:hover {
+      background: #00aaff;
+      transform: translateY(-2px);
+    }
+    .update-buttons button.cancel {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .update-buttons button.cancel:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
     @keyframes slideIn {
       from {
@@ -47,6 +119,123 @@
         transform: translateY(0);
         opacity: 1;
       }
+    }
+
+    /* Dock Styles */
+    .dock {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: flex;
+      gap: 20px;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+    .dock.light {
+      background: rgba(255,255,255,0.7);
+    }
+    .dock-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.3s;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .dock-item:hover {
+      background: rgba(255,255,255,0.2);
+      transform: scale(1.05);
+    }
+    body.light .dock-item:hover {
+      background: rgba(0,0,0,0.2);
+    }
+    .dock-icon {
+      width: 40px;
+      height: 40px;
+      background: #0077ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 5px;
+    }
+    .dock-label {
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    /* Add Popup Styles */
+    .add-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+      z-index: 10;
+    }
+    .add-popup.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .add-box {
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.5s ease-out;
+    }
+    .add-box h2 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+    .add-box label {
+      display: block;
+      text-align: left;
+      margin: 5px 0;
+    }
+    .add-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .add-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background: #0077ff;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .add-buttons button:hover {
+      background: #00aaff;
+      transform: translateY(-2px);
+    }
+    .add-buttons button.cancel {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .add-buttons button.cancel:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
   </style>
 </head>
@@ -69,13 +258,37 @@
     <ul>
       <li onclick="window.location.href='GameMods.html'"><svg viewBox="0 0 24 24"><path d="M20 13V9l-8-5-8 5v4l8 5 8-5z"/></svg> Game Mods</li>
       <li onclick="window.location.href='GameSaves.html'"><svg viewBox="0 0 24 24"><path d="M17 10.5V7l-5-3-5 3v3.5L12 14l5-3.5z"/></svg> Game Saves</li>
-      <li onclick="window.location.href='Homebrew.html'"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v6c0 5.55 3.84 10.74 10 12 6.16-1.26 1> Homebrew</li>0-6.45 10-12V7l-10-5z"/></svg
+      <li onclick="window.location.href='Homebrew.html'"><svg viewBox="0 0 24 24"><path d="M12 2L2 7v6c0 5.55 3.84 10.74 10 12 6.16-1.26 10-6.45 10-12V7l-10-5z"/></svg> Homebrew</li>
       <li onclick="window.location.href='Resources.html'"><svg viewBox="0 0 24 24"><path d="M11 17h2v-2h-2v2zm0-4h2V7h-2v6zM12 2C6.48 2 2 6.48 2 12 s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg> Resources</li>
       <li onclick="window.location.href='Themes.html'"><svg viewBox="0 0 24 24"><path d="M4 6h16v2H4V6zm0 10h16v2H4v-2z"/></svg> Themes</li>
-      <li onclick="window.location.href='DLCDWL.html'"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm4 0h14v-2H7v2z"/></svg> DLCs</li>
       <li onclick="window.location.href='PSNGames.html'"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm4 0h14v-2H7v2z"/></svg> PSN Games</li>
       <li onclick="window.location.href='Community.html'"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4 s-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2 c0-2.66-5.33-4-8-4z"/></svg> Community</li>
     </ul>
+  </div>
+ 
+  <!-- Update Announcement Popup -->
+  <div class="update-popup" id="updatePopup">
+    <div class="update-box">
+      <h2>New Update Available!</h2>
+      <p>Version 3.4.0 of CellBreakers Desktop is now available with new features and improvements.</p>
+      <div class="update-buttons">
+        <button onclick="downloadNow()">Download Now</button>
+        <button onclick="downloadLater()">Download Later</button>
+        <button class="cancel" onclick="closePopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Tools Hub Popup -->
+  <div class="add-popup" id="addPopup">
+    <div class="add-box">
+      <h2>Add Tools Hubs</h2>
+      <div id="hubOptions"></div>
+      <div class="add-buttons">
+        <button onclick="addSelectedHubs()">Add</button>
+        <button class="cancel" onclick="closeAddPopup()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <div class="container">
@@ -83,24 +296,42 @@
     <div class="welcome" id="welcomeText">Welcome Back!</div>
   </div>
 
+  <div class="dock" id="dock"></div>
+
   <script>
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
-
+    const updatePopup = document.getElementById('updatePopup');
     hamburger.addEventListener('click', () => {
       hamburger.classList.toggle('active');
       sidebar.classList.toggle('active');
     });
-
+    // === Update popup logic ===
+    function showUpdatePopup() {
+      updatePopup.classList.add('active');
+      // Focus on the first button for accessibility
+      updatePopup.querySelector('.update-buttons button').focus();
+    }
+    function closePopup() {
+      updatePopup.classList.remove('active');
+    }
+    function downloadNow() {
+      window.location.href = "https://cellbreakers.github.io/releases/CellBreakers_Installer_v0.1.0.zip";
+      closePopup();
+    }
+    function downloadLater() {
+      alert('You can download it later from the Settings page.');
+      closePopup();
+    }
+    // Show popup automatically after 3 seconds (simulate new update)
+    setTimeout(showUpdatePopup, 3000);
     // === Particles Background ===
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
     let particlesArray = [];
     const colors = ['#00aaff','#0077ff','#003366'];
-
     function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
     window.addEventListener('resize',resizeCanvas);resizeCanvas();
-
     class Particle{
       constructor(){
         this.x=Math.random()*canvas.width;
@@ -136,6 +367,134 @@
     }
     initParticles();
     animateParticles();
+
+    // Settings application
+    function getSettings() {
+      return localStorage.getItem('settings') ? JSON.parse(localStorage.getItem('settings')) : {};
+    }
+
+    function saveSettings(settings) {
+      localStorage.setItem('settings', JSON.stringify(settings));
+    }
+
+    function applyDisplayMode(mode, bg) {
+      let background = bg;
+      if (mode !== 'original') {
+        if (mode === 'dark') {
+          background = '#111111,#333333';
+        } else if (mode === 'oled') {
+          background = '#000000,#000000';
+        }
+      }
+      document.body.style.background = background.includes(',') ? `linear-gradient(135deg, ${background})` : background;
+    }
+
+    function applyUITheme(theme) {
+      const dock = document.getElementById('dock');
+      if (theme === 'light') {
+        document.body.classList.add('light');
+        sidebar.classList.add('light');
+        dock.classList.add('light');
+      } else {
+        document.body.classList.remove('light');
+        sidebar.classList.remove('light');
+        dock.classList.remove('light');
+      }
+    }
+
+    function applyParticles(enabled) {
+      canvas.style.display = enabled ? 'block' : 'none';
+    }
+
+    function loadSettings() {
+      const settings = getSettings();
+      applyUITheme(settings.theme ?? 'dark');
+      applyDisplayMode(settings.displayMode ?? 'original', settings.bg ?? '#00111a,#003366');
+      applyParticles(settings.particles ?? true);
+      buildDock(settings);
+    }
+
+    // Mini Dock logic
+    const availableHubs = [
+      { id: 'pkg', name: 'PKG Extractor', icon: '📦', url: 'https://www.psx-place.com/resources/trueancestor-pkg-repacker-by-jjkkyu.31/', external: true },
+      { id: 'pup', name: 'PUP Tools', icon: '🔧', url: 'https://www.psx-place.com/resources/puad-gui.488/', external: true },
+      { id: 'xploit', name: 'PS3xploit', icon: '⚡', url: 'https://ps3xploit.me/', external: true },
+      { id: 'hash', name: 'File Hash Checker', icon: '🔒', url: 'BuiltInHash.html', external: false }
+    ];
+
+    function buildDock(settings) {
+      const dock = document.getElementById('dock');
+      dock.innerHTML = '';
+      const selected = settings.selectedHubs || [];
+      selected.forEach(hubId => {
+        const hub = availableHubs.find(h => h.id === hubId);
+        if (hub) {
+          const item = document.createElement('div');
+          item.classList.add('dock-item');
+          item.innerHTML = `
+            <div class="dock-icon">${hub.icon}</div>
+            <div class="dock-label">${hub.name}</div>
+          `;
+          item.onclick = () => {
+            if (hub.external) {
+              window.open(hub.url, '_blank');
+            } else {
+              window.location.href = hub.url;
+            }
+          };
+          dock.appendChild(item);
+        }
+      });
+      if (selected.length < 4) {
+        const addItem = document.createElement('div');
+        addItem.classList.add('dock-item');
+        addItem.innerHTML = `
+          <div class="dock-icon">+</div>
+          <div class="dock-label">Add</div>
+        `;
+        addItem.onclick = showAddPopup;
+        dock.appendChild(addItem);
+      }
+    }
+
+    function showAddPopup() {
+      const settings = getSettings();
+      const selected = settings.selectedHubs || [];
+      const optionsDiv = document.getElementById('hubOptions');
+      optionsDiv.innerHTML = '';
+      const available = availableHubs.filter(h => !selected.includes(h.id));
+      if (available.length === 0) {
+        optionsDiv.innerHTML = '<p>No more hubs available.</p>';
+      } else {
+        available.forEach(hub => {
+          const label = document.createElement('label');
+          label.innerHTML = `<input type="checkbox" value="${hub.id}"> ${hub.name}`;
+          optionsDiv.appendChild(label);
+        });
+      }
+      document.getElementById('addPopup').classList.add('active');
+    }
+
+    function closeAddPopup() {
+      document.getElementById('addPopup').classList.remove('active');
+    }
+
+    function addSelectedHubs() {
+      const settings = getSettings();
+      const selected = settings.selectedHubs || [];
+      const checkboxes = document.querySelectorAll('#hubOptions input:checked');
+      const newHubs = Array.from(checkboxes).map(cb => cb.value);
+      if (selected.length + newHubs.length > 4) {
+        alert('You can only add up to 4 Tools Hubs.');
+        return;
+      }
+      settings.selectedHubs = [...selected, ...newHubs];
+      saveSettings(settings);
+      closeAddPopup();
+      buildDock(settings);
+    }
+
+    loadSettings();
   </script>
 </body>
 </html>
