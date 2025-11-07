@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coldboots - CellBreakers Desktop</title>
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #00111a, #003366);
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+    }
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+    .back-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .search {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1rem;
+      backdrop-filter: blur(10px);
+    }
+    .search::placeholder {color: rgba(255,255,255,0.6);}
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 30px rgba(0,170,255,0.3);
+    }
+    .preview {
+      height: 160px;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .preview img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+    }
+    .info {
+      padding: 15px;
+    }
+    .info h3 {
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .btn-preview {
+      background: #0077ff;
+      color: white;
+    }
+    .btn-preview:hover {
+      background: #00aaff;
+    }
+    .btn-download {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    .btn-download:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .loading, .error {
+      text-align: center;
+      padding: 50px;
+      font-size: 1.2rem;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border: 5px solid #0077ff;
+      border-radius: 10px;
+    }
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 3rem;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
+  
+  <div class="container">
+    <div class="header">
+      <h1>PS3 Coldboots</h1>
+      <p>Browse and download custom coldboot animations & icons</p>
+    </div>
+    
+    <input type="text" class="search" id="search" placeholder="Search coldboots..." />
+    
+    <div id="loading" class="loading">Loading coldboots from GitHub...</div>
+    <div id="error" class="error" style="display:none;"></div>
+    
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="modal" id="modal">
+    <span class="close-modal" onclick="closeModal()">×</span>
+    <img id="modalImg" src="" alt="Full Preview" />
+  </div>
+
+  <script>
+    const COLDBOOT_REPO = 'https://api.github.com/repos/PPPWnedPS3Dev/PS3Coldboots.mirror/contents';
+    const ICON_REPO = 'https://api.github.com/repos/PPPWnedPS3Dev/PS3ColdbootsIcons.mirror/contents';
+    
+    const grid = document.getElementById('grid');
+    const loading = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+    const searchInput = document.getElementById('search');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    
+    let allColdboots = [];
+
+    async function fetchRepo(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+      return await response.json();
+    }
+
+    async function loadColdboots() {
+      try {
+        const [animations, icons] = await Promise.all([
+          fetchRepo(COLDBOOT_REPO),
+          fetchRepo(ICON_REPO)
+        ]);
+
+        // Create maps for quick lookup
+        const iconMap = {};
+        icons.forEach(icon => {
+          const name = decodeURIComponent(icon.name.split('.').slice(0, -1).join('.'));
+          iconMap[name] = icon.download_url;
+        });
+
+        allColdboots = animations
+          .filter(file => file.name.endsWith('.qrc') || file.name.endsWith('.raf'))
+          .map(file => {
+            const cleanName = decodeURIComponent(file.name.split('.').slice(0, -1).join('.'));
+            return {
+              name: cleanName,
+              animationUrl: file.download_url,
+              iconUrl: iconMap[cleanName] || 'https://via.placeholder.com/300x200/0077ff/ffffff?text=No+Icon'
+            };
+          });
+
+        renderColdboots(allColdboots);
+        loading.style.display = 'none';
+      } catch (err) {
+        loading.style.display = 'none';
+        errorDiv.textContent = 'Failed to load coldboots: ' + err.message;
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    function renderColdboots(list) {
+      grid.innerHTML = '';
+      if (list.length === 0) {
+        grid.innerHTML = '<div class="loading">No coldboots found matching your search.</div>';
+        return;
+      }
+
+      list.forEach(cb => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="preview">
+            <img src="${cb.iconUrl}" alt="${cb.name}" onerror="this.src='https://via.placeholder.com/300x200/0077ff/ffffff?text=${encodeURIComponent(cb.name)}'" />
+          </div>
+          <div class="info">
+            <h3>${cb.name}</h3>
+            <div class="buttons">
+              <button class="btn btn-preview" onclick="openModal('${cb.iconUrl.replace(/'/g, "\\'")}')">Preview Icon</button>
+              <button class="btn btn-download" onclick="downloadFile('${cb.animationUrl.replace(/'/g, "\\'")}', '${cb.name}.qrc')">Download Animation</button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function downloadFile(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+    }
+
+    function openModal(src) {
+      modalImg.src = src;
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      modalImg.src = '';
+    }
+
+    // Search functionality
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = allColdboots.filter(cb => cb.name.toLowerCase().includes(term));
+      renderColdboots(filtered);
+    });
+
+    // Close modal on click outside
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Load on start
+    loadColdboots();
+  </script>
+</body>
+</html>
