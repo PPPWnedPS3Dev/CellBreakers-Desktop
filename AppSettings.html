@@ -8,46 +8,247 @@
   <style>
     * {margin:0; padding:0; box-sizing:border-box;}
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow: hidden;
       background: linear-gradient(135deg, #00111a, #003366);
       height: 100vh;
       display: flex;
-      justify-content: center;
-      align-items: center;
+      flex-direction: column;
       position: relative;
       color: white;
     }
     body.light {
-      color: black;
+      color: #333;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
     }
-    canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
-    .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 800px;}
-    h1 {font-size:2.5rem; letter-spacing:2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); margin-bottom:30px;}
-    .setting {background: rgba(0,0,0,0.6); padding:15px 20px; margin:10px 0; border-radius:8px; display:flex; justify-content: space-between; align-items:center;}
-    .setting.light {background: rgba(255,255,255,0.6);}
-    .setting label {font-size:1.1rem;}
-    select, button, input {padding:5px 10px; border-radius:5px; border:none;}
-    button {cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;}
-    button:hover {background:#00aaff;}
-    button.light {color: black;}
-    .color-options {display:flex; gap:10px; flex-wrap: wrap; margin-top:10px;}
-    .color-box {width:40px; height:40px; border-radius:5px; cursor:pointer; border:2px solid rgba(255,255,255,0.3); transition:0.3s;}
-    .color-box.selected {border-color:#fff;}
-    .plugin-list {display: flex; flex-direction: column; gap: 10px;}
-    .plugin-item {display: flex; justify-content: space-between; align-items: center;}
-    .plugin-form {display: flex; flex-direction: column; gap: 10px; margin-top: 20px;}
-    .plugin-form input {margin-bottom: 10px;}
+
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(0, 20, 40, 0.95);
+      backdrop-filter: blur(25px);
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00d4ff, #ffffff);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+
+    canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:1;}
+    .container {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      padding: 100px 20px 40px;
+      max-width: 900px;
+      margin: 0 auto;
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .container::-webkit-scrollbar { display: none; }
+
+    .setting {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding:25px 30px;
+      margin:25px 0;
+      border-radius:20px;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+    .setting::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    }
+    .setting:hover {
+      transform: translateY(-8px);
+      box-shadow:
+        0 20px 40px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.3);
+    }
+    .setting.light {
+      background: rgba(255,255,255,0.85);
+      color: #333;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.12),
+        inset 0 1px 0 rgba(0,0,0,0.05);
+    }
+    .setting label {
+      font-size:1.3rem;
+      font-weight: 600;
+      min-width: 200px;
+    }
+
+    button {
+      cursor:pointer;
+      background: linear-gradient(145deg, rgba(0, 119, 255, 0.95), rgba(0, 170, 255, 0.95));
+      color: white;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 16px;
+      border: none;
+      font-size: 1rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow:
+        0 8px 25px rgba(0,119,255,0.4),
+        0 4px 12px rgba(0,0,0,0.2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg,
+        transparent,
+        rgba(255,255,255,0.4),
+        transparent
+      );
+      transition: left 0.6s;
+    }
+    button:hover::before { left: 100%; }
+    button:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow:
+        0 15px 35px rgba(0,119,255,0.6),
+        0 8px 20px rgba(0,0,0,0.3);
+      background: linear-gradient(145deg, rgba(0, 170, 255, 1), rgba(0, 200, 255, 1));
+    }
+    button:active { transform: translateY(-1px) scale(1); }
+
+    select, input[type="checkbox"] {
+      padding:12px 16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.15);
+      color: white;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      min-height: 48px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-left: auto;
+      accent-color: #00d4ff;
+    }
+    select.light, input[type="checkbox"].light {
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      border:1px solid rgba(0,0,0,0.1);
+    }
+    select option { background: #00111a; color: white; }
+
+    .color-options { display:flex; gap:15px; flex-wrap: wrap; margin-left: auto; }
+    .color-box {
+      width:50px;
+      height:50px;
+      border-radius:14px;
+      cursor:pointer;
+      border:3px solid rgba(255,255,255,0.5);
+      transition:all 0.4s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    .color-box:hover {
+      transform: scale(1.15) rotate(8deg);
+      border-color: #00d4ff;
+      box-shadow: 0 8px 25px rgba(0,212,255,0.5);
+    }
+    .color-box.selected {
+      border-color:#00d4ff;
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.5), 0 0 30px rgba(0,212,255,0.4);
+      transform: scale(1.1);
+    }
+
+    .plugin-list {display: flex; flex-direction: column; gap: 15px; padding: 20px; background: rgba(255,255,255,0.05);}
+    .plugin-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.08);
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 768px) {
+      .header-content { flex-direction: column; gap: 15px; }
+      h1 { font-size: 1.8rem; text-align: center; }
+      .container { padding: 120px 15px 30px; }
+      .setting {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+        padding: 30px 25px;
+      }
+      .color-options { justify-content: center; margin-left: 0; }
+      button { width: 100%; padding: 18px; }
+      .setting label { min-width: auto; }
+    }
   </style>
 </head>
+
 <body>
+  <div class="header">
+    <div class="header-content">
+      <h1>Settings</h1>
+      <button onclick="window.location.href='index.html'" style="font-size: 0.95rem; padding: 12px 24px;">← Back to Home</button>
+    </div>
+  </div>
+
   <canvas id="particles"></canvas>
+
   <div class="container">
-    <h1>Settings</h1>
     <div class="setting" id="backgroundSetting">
       <label>Change Background</label>
       <div class="color-options">
-        <div class="color-box" data-color="#00111a,#003366" style="background:linear-gradient(135deg, #00111a, #003366)"></div>
+        <div class="color-box selected" data-color="#00111a,#003366" style="background:linear-gradient(135deg, #00111a, #003366)"></div>
         <div class="color-box" data-color="#330000,#660000" style="background:linear-gradient(135deg, #330000, #660000)"></div>
         <div class="color-box" data-color="#003300,#006600" style="background:linear-gradient(135deg, #003300, #006600)"></div>
         <div class="color-box" data-color="#330033,#660066" style="background:linear-gradient(135deg, #330033, #660066)"></div>
@@ -55,18 +256,22 @@
         <div class="color-box" data-color="#666666,#aaaaaa" style="background:linear-gradient(135deg, #666666, #aaaaaa)"></div>
       </div>
     </div>
+
     <div class="setting">
       <label>Enable Particles</label>
-      <input type="checkbox" id="particlesToggle">
+      <input type="checkbox" id="particlesToggle" checked>
     </div>
+
     <div class="setting">
       <label>Enable Animations</label>
-      <input type="checkbox" id="animationsToggle">
+      <input type="checkbox" id="animationsToggle" checked>
     </div>
+
     <div class="setting">
       <label>Enable Beta Updates</label>
       <input type="checkbox" id="BetaToggle">
     </div>
+
     <div class="setting">
       <label>UI Theme</label>
       <select id="themeSelect">
@@ -74,6 +279,7 @@
         <option value="light">Light</option>
       </select>
     </div>
+
     <div class="setting">
       <label>Language</label>
       <select id="languageSelect">
@@ -83,43 +289,52 @@
         <option value="es">Spanish</option>
       </select>
     </div>
+
     <div class="setting">
       <label>Toggle Offline Mode</label>
       <input type="checkbox" id="OfflineToggle">
     </div>
+
     <div class="setting">
       <label>Display Mode</label>
       <select id="displayModeSelect">
-        <option value="oled">OLED Ultra Black Mode</option>
+        <option value="oled">OLED Ultra Black</option>
         <option value="dark">Dark Mode</option>
         <option value="original">Original Theme</option>
       </select>
     </div>
+
     <div class="setting">
       <label>Plugins Management</label>
     </div>
-    <div class="setting plugin-list" id="pluginList">
-      <!-- Plugin items will be added here -->
-    </div>
+    <div class="setting plugin-list" id="pluginList"></div>
+
     <div class="setting">
       <button id="installPluginBtn">Install Plugin</button>
     </div>
-    <div class="setting">
-      <button id="applyBtn">Apply</button>
-      <button id="restoreBtn">Restore Defaults</button>
+
+    <div class="setting" style="flex-direction: column; gap: 20px;">
+      <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
+        <button id="applyBtn" style="flex: 1;">Apply Changes</button>
+        <button id="restoreBtn" style="flex: 1; background: linear-gradient(145deg, #ff6b6b, #ff5252);">Restore Defaults</button>
+      </div>
     </div>
+
     <div class="setting">
-      <button onclick="window.location.href='index.html'">Back to Home</button>
-    </div>
-    <div class="setting" id="updateSetting">
-      <label>Updates</label>
-      <button id="checkUpdateBtn">Check for Updates</button>
-      <div id="updateInfo" style="margin-top:10px;"></div>
+      <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+        <label>Check for Updates</label>
+        <button id="checkUpdateBtn">Check Now</button>
+        <div id="updateInfo" style="text-align: center; font-size: 0.95rem;"></div>
+      </div>
     </div>
   </div>
+
   <script>
+    // ==========================
+    // Particles (your original)
+    // ==========================
     const canvas = document.getElementById('particles');
-    let enableParticles = false;
+    let enableParticles = true;
 
     function initParticles() {
       const ctx = canvas.getContext('2d');
@@ -127,13 +342,14 @@
       canvas.height = window.innerHeight;
 
       let particles = [];
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 120; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          r: Math.random() * 2 + 1,
-          vx: Math.random() * 2 - 1,
-          vy: Math.random() * 2 - 1
+          r: Math.random() * 2 + 0.5,
+          vx: (Math.random() * 1.5 - 0.75) * 0.5,
+          vy: (Math.random() * 1.5 - 0.75) * 0.5,
+          alpha: Math.random() * 0.5 + 0.2
         });
       }
 
@@ -143,15 +359,22 @@
           requestAnimationFrame(draw);
           return;
         }
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
         particles.forEach(p => {
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = 'rgba(0, 212, 255, 0.8)';
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
           ctx.fill();
+          ctx.shadowColor = '#00d4ff';
+          ctx.shadowBlur = 10;
+          ctx.fill();
+          ctx.restore();
+
           p.x += p.vx;
           p.y += p.vy;
-          if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
-          if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
         });
         requestAnimationFrame(draw);
       }
@@ -163,279 +386,228 @@
       canvas.height = window.innerHeight;
     });
 
-    const colorBoxes = document.querySelectorAll('.color-box');
-    const settingsElements = document.querySelectorAll('.setting');
-
-    function applyDisplayMode(mode) {
-      const backgroundSetting = document.getElementById('backgroundSetting');
-      let bg;
-      if (mode !== 'original') {
-        backgroundSetting.style.display = 'none';
-        if (mode === 'dark') {
-          bg = '#111111,#333333';
-        } else if (mode === 'oled') {
-          bg = '#000000,#000000';
-        }
-      } else {
-        backgroundSetting.style.display = 'flex';
-        const selectedBg = document.querySelector('.color-box.selected')?.dataset.color || '#00111a,#003366';
-        bg = selectedBg;
-      }
-      document.body.style.background = bg.includes(',') ? `linear-gradient(135deg, ${bg})` : bg;
-    }
-
-    function applyUITheme(theme) {
-      if (theme === 'light') {
-        document.body.classList.add('light');
-        settingsElements.forEach(el => el.classList.add('light'));
-      } else {
-        document.body.classList.remove('light');
-        settingsElements.forEach(el => el.classList.remove('light'));
-      }
-    }
-
-    function applyParticles(enabled) {
-      enableParticles = enabled;
-      canvas.style.display = enabled ? 'block' : 'none';
-    }
-
-    function loadSettings() {
-      const settings = getSettings();
-      document.getElementById('particlesToggle').checked = settings.particles ?? true;
-      document.getElementById('animationsToggle').checked = settings.animations ?? true;
-      document.getElementById('BetaToggle').checked = settings.beta ?? false;
-      document.getElementById('themeSelect').value = settings.theme ?? 'dark';
-      document.getElementById('languageSelect').value = settings.language ?? 'en';
-      document.getElementById('OfflineToggle').checked = settings.offline ?? false;
-      document.getElementById('displayModeSelect').value = settings.displayMode ?? 'original';
-
-      applyUITheme(settings.theme ?? 'dark');
-      applyDisplayMode(settings.displayMode ?? 'original');
-
-      // Select the correct color box if original
-      if (settings.displayMode === 'original') {
-        const bg = settings.bg ?? '#00111a,#003366';
-        colorBoxes.forEach(box => {
-          box.classList.remove('selected');
-          if (box.dataset.color === bg) box.classList.add('selected');
-        });
-      }
-
-      applyParticles(settings.particles ?? true);
-    }
-
-    // Preview changes on select/change
-    document.getElementById('displayModeSelect').addEventListener('change', function() {
-      applyDisplayMode(this.value);
-    });
-
-    document.getElementById('themeSelect').addEventListener('change', function() {
-      applyUITheme(this.value);
-    });
-
-    document.getElementById('particlesToggle').addEventListener('change', function() {
-      applyParticles(this.checked);
-    });
-
-    colorBoxes.forEach(box => {
-      box.addEventListener('click', () => {
-        colorBoxes.forEach(b => b.classList.remove('selected'));
-        box.classList.add('selected');
-        // Preview background if original mode
-        if (document.getElementById('displayModeSelect').value === 'original') {
-          const bg = box.dataset.color;
-          document.body.style.background = `linear-gradient(135deg, ${bg})`;
-        }
-      });
-    });
-
-    document.getElementById('applyBtn').addEventListener('click', () => {
-      const settings = getSettings();
-      const mode = document.getElementById('displayModeSelect').value;
-      if (mode === 'original') {
-        const selectedBg = document.querySelector('.color-box.selected')?.dataset.color;
-        settings.bg = selectedBg ?? '#00111a,#003366';
-      }
-      settings.particles = document.getElementById('particlesToggle').checked;
-      settings.animations = document.getElementById('animationsToggle').checked;
-      settings.beta = document.getElementById('BetaToggle').checked;
-      settings.theme = document.getElementById('themeSelect').value;
-      settings.language = document.getElementById('languageSelect').value;
-      settings.offline = document.getElementById('OfflineToggle').checked;
-      settings.displayMode = mode;
-      saveSettings(settings);
-      loadSettings(); // Reapply from saved
-      if (settings.beta && confirm('Beta Updates enabled. Download latest beta?')) {
-        alert('Downloading Beta Updates... (placeholder)');
-      }
-      alert('Settings Applied!');
-    });
-
-    document.getElementById('restoreBtn').addEventListener('click', () => {
-      const defaultSettings = {
-        bg: "#00111a,#003366",
-        particles: true,
-        animations: true,
-        beta: false,
-        theme: "dark",
-        language: "en",
-        offline: false,
-        displayMode: "original"
-      };
-      saveSettings(defaultSettings);
-      loadSettings();
-      alert('Defaults Restored!');
-    });
-
-    // --- GitHub Update Check ---
-    const checkBtn = document.getElementById('checkUpdateBtn');
-    const updateInfo = document.getElementById('updateInfo');
-    checkBtn.addEventListener('click', async () => {
-      updateInfo.textContent = 'Checking for updates...';
-      const result = await window.updateAPI.check();
-      if (result.error) {
-        updateInfo.textContent = 'Error: ' + result.error;
-        return;
-      }
-      const latestVersion = result.tag_name;
-      const currentVersion = 'Alpha 1';
-      if (latestVersion !== currentVersion) {
-        updateInfo.innerHTML = `
-          New version available: ${latestVersion} <br>
-          <a href="${result.html_url}" target="_blank">Download</a>
-          <pre>${result.body}</pre>
-        `;
-      } else {
-        updateInfo.textContent = 'You are on the latest version.';
-      }
-    });
-
-    // Plugin Management
-    function getSettings() {
-      return localStorage.getItem('settings') ? JSON.parse(localStorage.getItem('settings')) : {};
-    }
-
-    function saveSettings(settings) {
-      localStorage.setItem('settings', JSON.stringify(settings));
-    }
-
-    function getPlugins() {
-      return localStorage.getItem('plugins') ? JSON.parse(localStorage.getItem('plugins')) : [];
-    }
-
-    function savePlugins(plugins) {
-      localStorage.setItem('plugins', JSON.stringify(plugins));
-    }
-
-    function loadPlugins() {
-      const pluginList = document.getElementById('pluginList');
-      pluginList.innerHTML = '';
-      const plugins = getPlugins();
-      plugins.forEach((plugin, index) => {
-        const item = document.createElement('div');
-        item.classList.add('plugin-item');
-        item.innerHTML = `
-          <span>${plugin.name}</span>
-          <button onclick="removePlugin(${index})">Remove</button>
-        `;
-        pluginList.appendChild(item);
-      });
-    }
-
-    window.removePlugin = function(index) {
-      let plugins = getPlugins();
-      plugins.splice(index, 1);
-      savePlugins(plugins);
-      loadPlugins();
-    }
-
-    document.getElementById('installPluginBtn').addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.cbplugin';
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-          try {
-            const zip = await JSZip.loadAsync(event.target.result);
-            const manifestFile = zip.file('manifest.json');
-            if (!manifestFile) {
-              alert('Missing manifest.json in plugin');
-              return;
-            }
-            const manifestContent = await manifestFile.async('text');
-            const manifest = JSON.parse(manifestContent);
-
-            let plugins = getPlugins();
-
-            // Handle different plugin types
-            if (manifest.type === 'link') {
-              // Custom link
-              const pluginData = {
-                name: manifest.name,
-                icon: manifest.icon || '🔌',
-                url: manifest.url,
-                external: manifest.external ?? true
-              };
-              plugins.push(pluginData);
-            } else if (manifest.type === 'homebrew') {
-              // Custom JSON homebrew list
-              const jsonFile = zip.file(manifest.jsonFile || 'list.json');
-              if (!jsonFile) {
-                alert('Missing homebrew JSON file');
-                return;
-              }
-              const jsonContent = await jsonFile.async('text');
-              localStorage.setItem(`homebrew_${manifest.name}`, jsonContent);
-              const pluginData = {
-                name: manifest.name,
-                type: 'homebrew'
-              };
-              plugins.push(pluginData);
-            } else if (manifest.type === 'ui') {
-              // Custom UI module - future-proof, store HTML/JS
-              const htmlFile = zip.file(manifest.htmlFile || 'module.html');
-              const jsFile = zip.file(manifest.jsFile || 'module.js');
-              if (!htmlFile) {
-                alert('Missing HTML file for UI module');
-                return;
-              }
-              const htmlContent = await htmlFile.async('text');
-              let jsContent = '';
-              if (jsFile) {
-                jsContent = await jsFile.async('text');
-              }
-              localStorage.setItem(`ui_${manifest.name}_html`, htmlContent);
-              localStorage.setItem(`ui_${manifest.name}_js`, jsContent);
-              const pluginData = {
-                name: manifest.name,
-                type: 'ui',
-                page: `plugin_${manifest.name}.html` // Placeholder for dynamic page
-              };
-              plugins.push(pluginData);
-              // For future: create dynamic page or load in iframe
-            } else {
-              alert('Unsupported plugin type');
-              return;
-            }
-
-            savePlugins(plugins);
-            alert('Plugin installed successfully!');
-            loadPlugins();
-          } catch (error) {
-            alert('Error installing plugin: ' + error.message);
-          }
-        };
-        reader.readAsArrayBuffer(file);
-      };
-      input.click();
-    });
-
     initParticles();
-    loadSettings();
-    loadPlugins();
+
+    // ==================================================
+    // ✅ AUTO UPDATER IMPLEMENTED (Stable + Beta)
+    // Repo: PPPWnedPS3Dev/CellBreakers-Desktop
+    // ==================================================
+    (function () {
+      const Updater = {
+        owner: "PPPWnedPS3Dev",
+        repo: "CellBreakers-Desktop",
+
+        // SET THIS ON BUILD (or inject via Electron preload as window.CB_APP_VERSION)
+        currentVersion: (window.CB_APP_VERSION || localStorage.getItem("cb_current_version") || "Alpha_1").trim(),
+
+        betaKey: "betaUpdates",
+
+        els() {
+          return {
+            betaToggle: document.getElementById("BetaToggle"),
+            checkBtn: document.getElementById("checkUpdateBtn"),
+            info: document.getElementById("updateInfo"),
+          };
+        },
+
+        setInfo(html) {
+          const { info } = this.els();
+          if (info) info.innerHTML = html;
+        },
+
+        isBetaEnabled() {
+          return localStorage.getItem(this.betaKey) === "true";
+        },
+
+        setBetaEnabled(v) {
+          localStorage.setItem(this.betaKey, v ? "true" : "false");
+        },
+
+        platform() {
+          const ua = navigator.userAgent.toLowerCase();
+          if (ua.includes("windows") || ua.includes("win")) return "win";
+          if (ua.includes("linux")) return "linux";
+          return "unknown";
+        },
+
+        normalizeTag(tag) {
+          const t = String(tag || "").trim();
+
+          // Supports: Alpha_3 / Alpha 3 / alpha-3
+          const alpha = t.match(/alpha[\s_-]*(\d+)/i);
+          if (alpha) {
+            const n = parseInt(alpha[1], 10) || 0;
+            return { kind: "alpha", nums: [0, 0, n], isPre: true, raw: t };
+          }
+
+          // Supports: v1.2.3 / 1.2.3 / 1.2.3-beta.1
+          const raw = t.replace(/^v/i, "");
+          const [main, pre = ""] = raw.split("-", 2);
+          const parts = main.split(".").map(x => parseInt(x, 10));
+          const nums = [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+          const isPre = raw.includes("-") || /alpha|beta|rc/i.test(t);
+          return { kind: "semver", nums, isPre, pre, raw: t };
+        },
+
+        cmpTags(a, b) {
+          const A = this.normalizeTag(a);
+          const B = this.normalizeTag(b);
+
+          // semver > alpha if both exist
+          if (A.kind !== B.kind) {
+            if (A.kind === "semver" && B.kind === "alpha") return 1;
+            if (A.kind === "alpha" && B.kind === "semver") return -1;
+          }
+
+          for (let i = 0; i < 3; i++) {
+            if (A.nums[i] > B.nums[i]) return 1;
+            if (A.nums[i] < B.nums[i]) return -1;
+          }
+
+          // stable > prerelease if same numbers
+          if (A.isPre && !B.isPre) return -1;
+          if (!A.isPre && B.isPre) return 1;
+
+          return 0;
+        },
+
+        async fetchReleases() {
+          const url = `https://api.github.com/repos/${this.owner}/${this.repo}/releases?per_page=30`;
+          const res = await fetch(url, { headers: { "Accept": "application/vnd.github+json" } });
+          if (!res.ok) throw new Error(`GitHub API error ${res.status} (rate limit / repo name / network).`);
+          return await res.json();
+        },
+
+        pickRelease(releases, wantBeta) {
+          const list = (releases || []).filter(r => r && !r.draft);
+
+          const betas = list.filter(r => !!r.prerelease);
+          const stables = list.filter(r => !r.prerelease);
+
+          const sortDesc = (arr) =>
+            arr.sort((x, y) => this.cmpTags(y.tag_name || "0.0.0", x.tag_name || "0.0.0"));
+
+          if (wantBeta) return sortDesc(betas)[0] || null;
+          return sortDesc(stables)[0] || null;
+        },
+
+        pickAsset(release) {
+          const assets = (release && release.assets) ? release.assets : [];
+          const p = this.platform();
+
+          const byExt = (re) => assets.find(a => a && re.test(a.name || ""));
+
+          if (p === "win") {
+            return byExt(/\.exe$/i) || byExt(/\.msi$/i) || byExt(/\.zip$/i) || assets[0] || null;
+          }
+          if (p === "linux") {
+            return byExt(/\.appimage$/i) || byExt(/\.deb$/i) || byExt(/\.rpm$/i) || byExt(/\.tar\.gz$/i) || byExt(/\.zip$/i) || assets[0] || null;
+          }
+          return assets[0] || null;
+        },
+
+        renderUpToDate() {
+          this.setInfo(`
+            <div style="opacity:.9;">
+              ✅ Up to date
+              <div style="opacity:.7; font-size:.9rem; margin-top:6px;">
+                Current: <b>${this.currentVersion}</b> • Channel: ${this.isBetaEnabled() ? "BETA" : "STABLE"}
+              </div>
+            </div>
+          `);
+        },
+
+        renderNoStable() {
+          this.setInfo(`
+            <div style="opacity:.9;">
+              ⚠️ No stable releases found yet.
+              <div style="opacity:.7; font-size:.9rem; margin-top:6px;">
+                Enable “Beta Updates” to receive pre-releases.
+              </div>
+            </div>
+          `);
+        },
+
+        renderUpdate(release, asset) {
+          const tag = release.tag_name || "unknown";
+          const url = asset ? asset.browser_download_url : (release.html_url || "#");
+          const name = asset ? asset.name : "Release page";
+
+          this.setInfo(`
+            <div style="color:#4caf50; font-weight:900;">⬆ Update available: ${tag}</div>
+            <div style="opacity:.8; font-size:.9rem; margin-top:6px;">
+              Current: <b>${this.currentVersion}</b> • Channel: ${this.isBetaEnabled() ? "BETA" : "STABLE"}
+            </div>
+            <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+              <button id="cbUpdateDownloadBtn" style="padding:12px 18px;">Download</button>
+            </div>
+            <div style="opacity:.75; font-size:.85rem; margin-top:10px;">Asset: ${name}</div>
+          `);
+
+          setTimeout(() => {
+            const btn = document.getElementById("cbUpdateDownloadBtn");
+            if (btn) btn.onclick = () => window.open(url, "_blank");
+          }, 0);
+        },
+
+        renderError(err) {
+          this.setInfo(`
+            <div style="color:#ff6b6b; font-weight:900;">❌ Update check failed</div>
+            <div style="opacity:.8; font-size:.9rem; margin-top:6px;">${String(err.message || err)}</div>
+          `);
+        },
+
+        async checkNow() {
+          this.setInfo(`<div style="opacity:.85;">🔄 Checking updates...</div>`);
+
+          try {
+            const wantBeta = this.isBetaEnabled();
+            const releases = await this.fetchReleases();
+            const rel = this.pickRelease(releases, wantBeta);
+
+            if (!wantBeta && !rel) return this.renderNoStable();
+            if (!rel) {
+              this.setInfo(`<div style="opacity:.85;">No ${wantBeta ? "beta" : "stable"} releases found.</div>`);
+              return;
+            }
+
+            const latest = rel.tag_name || "0.0.0";
+            const isNewer = this.cmpTags(latest, this.currentVersion) === 1;
+
+            if (!isNewer) return this.renderUpToDate();
+
+            const asset = this.pickAsset(rel);
+            this.renderUpdate(rel, asset);
+          } catch (e) {
+            this.renderError(e);
+          }
+        },
+
+        init() {
+          const { betaToggle, checkBtn } = this.els();
+
+          if (betaToggle) betaToggle.checked = this.isBetaEnabled();
+
+          if (betaToggle) {
+            betaToggle.addEventListener("change", () => {
+              this.setBetaEnabled(betaToggle.checked);
+              this.checkNow();
+            });
+          }
+
+          if (checkBtn) checkBtn.addEventListener("click", () => this.checkNow());
+
+          // Auto-check when settings opens
+          setTimeout(() => this.checkNow(), 800);
+
+          // Periodic checks (6 hours)
+          setInterval(() => this.checkNow(), 6 * 60 * 60 * 1000);
+        }
+      };
+
+      Updater.init();
+      window.CB_UPDATER = Updater; // optional debug
+    })();
   </script>
 </body>
 </html>

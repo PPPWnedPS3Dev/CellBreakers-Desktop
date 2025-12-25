@@ -20,37 +20,127 @@
     canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
     .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 900px;}
     h1 {font-size:2.5rem; letter-spacing:2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); margin-bottom:30px;}
+
     .changelog-box {
       background: rgba(0,0,0,0.6);
       border-radius: 10px;
-      padding: 20px;
+      padding: 14px;
       min-height: 400px;
       max-height: 70vh;
       overflow-y: auto;
       text-align: left;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       box-shadow: 0 0 15px rgba(0,0,0,0.5);
     }
-    .changelog-box p {margin-bottom: 10px;}
     .changelog-box::-webkit-scrollbar {width: 6px;}
     .changelog-box::-webkit-scrollbar-thumb {background-color: rgba(255,255,255,0.2); border-radius: 3px;}
+
+    details.release {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    details.release summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+    details.release summary::-webkit-details-marker { display:none; }
+
+    .ver { font-weight: 900; font-size: 1.15rem; letter-spacing: .5px; }
+    .badge {
+      font-size: .78rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.15);
+      opacity: .95;
+    }
+    .badge.alpha { background: rgba(0, 170, 255, 0.18); color: #9fe7ff; }
+    .badge.beta  { background: rgba(255, 193, 7, 0.18); color: #ffe08a; }
+
+    .chev { margin-left: auto; opacity: .8; transition: transform .2s ease; font-weight: 900; }
+    details[open] .chev { transform: rotate(90deg); }
+
+    .release-body {
+      padding: 0 14px 14px 14px;
+      border-top: 1px solid rgba(255,255,255,0.10);
+      line-height: 1.55;
+    }
+    .release-body ul { margin: 8px 0 0 20px; }
+    .release-body li { margin: 6px 0; }
+    .release-body p { margin: 8px 0; }
+
+    .placeholder { opacity: .75; font-size: .95rem; padding: 12px 0 6px 0; }
+    .err { color: #ffb4b4; font-weight: 800; padding: 12px 0; }
+    code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 6px; }
+
     button {margin-top:20px; padding:10px 20px; border:none; border-radius:5px; background:#0077ff; color:white; font-weight:bold; cursor:pointer; transition:0.3s;}
     button:hover {background:#00aaff;}
   </style>
 </head>
 <body>
   <canvas id="particles"></canvas>
+
   <div class="container">
     <h1>Change Log</h1>
-    <div class="changelog-box" contenteditable="false">
-      <!-- Add your change logs here -->
-      <p><strong>v1.0.0:</strong> Initial release of CellBreakers Desktop.</p>
-      <p><strong>v1.1.0:</strong> Added settings page with background options and particles effect.</p>
+
+    <div class="changelog-box" id="changelogBox">
+      <!-- Nothing fetched until opened -->
+      <details class="release" data-tag="Alpha_1" data-label="Alpha 1" data-kind="alpha">
+        <summary>
+          <span class="ver">Alpha 1</span>
+          <span class="badge alpha">ALPHA</span>
+          <span class="chev">›</span>
+        </summary>
+        <div class="release-body"><div class="placeholder">Open to load Alpha 1 notes…</div></div>
+      </details>
+
+      <details class="release" data-tag="Alpha_2" data-label="Alpha 2" data-kind="alpha">
+        <summary>
+          <span class="ver">Alpha 2</span>
+          <span class="badge alpha">ALPHA</span>
+          <span class="chev">›</span>
+        </summary>
+        <div class="release-body"><div class="placeholder">Open to load Alpha 2 notes…</div></div>
+      </details>
+
+      <details class="release" data-tag="Alpha_3" data-label="Alpha 3" data-kind="alpha">
+        <summary>
+          <span class="ver">Alpha 3</span>
+          <span class="badge alpha">ALPHA</span>
+          <span class="chev">›</span>
+        </summary>
+        <div class="release-body"><div class="placeholder">Open to load Alpha 3 notes…</div></div>
+      </details>
+
+      <details class="release" data-tag="Beta_1" data-label="Beta 1" data-kind="beta">
+        <summary>
+          <span class="ver">Beta 1</span>
+          <span class="badge beta">BETA</span>
+          <span class="chev">›</span>
+        </summary>
+        <div class="release-body"><div class="placeholder">Open to load Beta 1 notes…</div></div>
+      </details>
+
+      <p style="opacity:.65; font-size:.95rem; margin-top:12px;">
+        Loads from: <code>https://api.github.com/repos/PPPWnedPS3Dev/CellBreakers-Desktop/releases/tags/&lt;TAG&gt;</code>
+      </p>
     </div>
+
     <button onclick="window.location.href='index.html'">Back to Home</button>
   </div>
 
   <script>
+    // =====================
+    // Particles (unchanged)
+    // =====================
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
     let particlesArray = [];
@@ -74,12 +164,162 @@
     function initParticles(){particlesArray=[];for(let i=0;i<80;i++){particlesArray.push(new Particle());}
     animateParticles();}
     function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particlesArray.forEach(p=>{p.update();p.draw();});requestAnimationFrame(animateParticles);}
-
     initParticles();
 
     // Load saved background
     const bg = localStorage.getItem('bg');
     if(bg){document.body.style.background = `linear-gradient(135deg, ${bg})`;}
+
+    // ==========================
+    // Lazy-load from GitHub API
+    // ==========================
+    const OWNER = "PPPWnedPS3Dev";
+    const REPO  = "CellBreakers-Desktop";
+
+    // in-memory per session
+    const loaded = new Set();
+
+    // basic escape
+    const esc = (s) => String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+    // very small markdown renderer:
+    // - paragraphs by blank lines
+    // - "- " bullet lists
+    // - **bold**
+    function mdToHtml(md) {
+      const text = String(md ?? "").replaceAll("\r\n", "\n");
+      const lines = text.split("\n");
+
+      let html = "";
+      let inList = false;
+
+      const flushList = () => {
+        if (inList) { html += "</ul>"; inList = false; }
+      };
+
+      for (let rawLine of lines) {
+        const line = rawLine.trimEnd();
+
+        if (!line.trim()) {
+          flushList();
+          continue;
+        }
+
+        // bullets
+        const m = line.match(/^[-*]\s+(.*)$/);
+        if (m) {
+          if (!inList) { html += "<ul>"; inList = true; }
+          html += `<li>${inlineFmt(m[1])}</li>`;
+          continue;
+        }
+
+        flushList();
+        html += `<p>${inlineFmt(line)}</p>`;
+      }
+
+      flushList();
+      return html || `<p style="opacity:.8;">No release notes.</p>`;
+    }
+
+    function inlineFmt(s) {
+      // escape first
+      let out = esc(s);
+      // **bold**
+      out = out.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      return out;
+    }
+
+    function cacheKey(tag) {
+      return `cb_changelog_cache_${OWNER}_${REPO}_${tag}`;
+    }
+
+    function setBody(detailsEl, html) {
+      const body = detailsEl.querySelector(".release-body");
+      if (body) body.innerHTML = html;
+    }
+
+    async function loadRelease(detailsEl) {
+      const tag = detailsEl.getAttribute("data-tag");
+      const label = detailsEl.getAttribute("data-label") || tag;
+
+      if (!tag) return;
+      if (loaded.has(tag)) return;
+
+      // try cache first
+      const cached = localStorage.getItem(cacheKey(tag));
+      if (cached) {
+        setBody(detailsEl, cached);
+        loaded.add(tag);
+        return;
+      }
+
+      setBody(detailsEl, `<div class="placeholder">Loading ${esc(label)}…</div>`);
+
+      const url = `https://api.github.com/repos/${OWNER}/${REPO}/releases/tags/${encodeURIComponent(tag)}`;
+
+      try {
+        const res = await fetch(url, {
+          headers: { "Accept": "application/vnd.github+json" }
+        });
+
+        if (!res.ok) {
+          throw new Error(`GitHub API error ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        const published = data.published_at ? esc(data.published_at) : "unknown";
+        const bodyMd = (data.body ?? "").toString();
+
+        const notesHtml = mdToHtml(bodyMd);
+
+        const finalHtml = `
+          <div style="opacity:.75; font-size:.92rem; margin-top:10px;">
+            <strong>${esc(label)}</strong> • Published: ${published}
+          </div>
+          <div style="margin-top:10px;">
+            ${notesHtml}
+          </div>
+        `;
+
+        setBody(detailsEl, finalHtml);
+        localStorage.setItem(cacheKey(tag), finalHtml);
+        loaded.add(tag);
+      } catch (e) {
+        setBody(detailsEl, `
+          <div class="err">Failed to load ${esc(label)}.</div>
+          <div style="opacity:.75; font-size:.95rem;">
+            Reason: ${esc(e.message || e)}
+            <br>Check internet / GitHub rate limit.
+          </div>
+        `);
+      }
+    }
+
+    // Only fetch when opened (toggle)
+    document.querySelectorAll("details.release").forEach(d => {
+      d.addEventListener("toggle", () => {
+        if (d.open) loadRelease(d);
+      });
+    });
+
+    // Optional: clear cache with Ctrl+Shift+L (debug)
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.shiftKey && (e.key === "L" || e.key === "l")) {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith(`cb_changelog_cache_${OWNER}_${REPO}_`)) localStorage.removeItem(k);
+        });
+        loaded.clear();
+        document.querySelectorAll("details.release .release-body").forEach(b => {
+          b.innerHTML = `<div class="placeholder">Open to load notes…</div>`;
+        });
+      }
+    });
   </script>
 </body>
 </html>

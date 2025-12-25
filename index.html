@@ -157,8 +157,11 @@
       <li onclick="window.location.href='ChangeLog.html'">
         <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9c0 3.97 2.59 7.34 6.16 8.47.38.07.52-.17.52-.38 0-.19-.01-.82-.01-1.49-2.51.54-3.04-.61-3.04-.61-.41-.99-.99-1.25-.99-1.25-1.34-1.06.1-.96.1-.96 1.48.1 2.27 1.55 2.27 1.55 2.02 3.45 5.31 2.46 6.61 1.88.2-1.46.79-2.46 1.44-3.02-1.98-.22-4.06-1-4.06-4.44 0-.98.35-1.78 1.02-2.41-.1-.25-.45-1.14.1-2.38 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 5.85c.85.004 1.71.11 2.52.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.24.2 2.13.1 2.38.67.63 1.02 1.43 1.02 2.41 0 3.45-2.09 4.22-4.08 4.44.32.28.61.83.61 1.67 0 1.21-.01 2.19-.01 2.49 0 .21.14.46.53.38A9.003 9.003 0 0 0 13 3z"/></svg> Change Log
       </li>
-      <li onclick="window.location.href='AboutApp.html'">
+      <li onclick="window.location.href='example.html'">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> About App
+      </li>
+      <li onclick="window.location.href='example.html'">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Help & Support
       </li>
     </ul>
 
@@ -167,9 +170,6 @@
     <ul>
       <li onclick="window.location.href='ColdBoots.html'">
         <svg viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2zm0 4.5l5.5 5.5H14v5h-4v-5H6.5L12 6.5z"/></svg> Coldboots
-      </li>
-      <li onclick="window.location.href='Downloads.html'">
-        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Downloads
       </li>
       <li onclick="window.location.href='FileManager.html'">
         <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg> File Manager
@@ -315,9 +315,6 @@
 
     // Dock Hubs (Coldboots & PS3HEN Coldboots REMOVED from here)
     const availableHubs = [
-      { id: 'pkg', name: 'PKG Extractor', icon: 'Package', url: 'https://www.psx-place.com/resources/trueancestor-pkg-repacker-by-jjkkyu.31/', external: true },
-      { id: 'pup', name: 'PUP Tools', icon: 'Tool', url: 'https://www.psx-place.com/resources/puad-gui.488/', external: true },
-      { id: 'xploit', name: 'PS3xploit', icon: 'Lightning', url: 'https://ps3xploit.me/', external: true },
       { id: 'hash', name: 'File Hash Checker', icon: 'Lock', url: 'BuiltInHash.html', external: false }
     ];
 

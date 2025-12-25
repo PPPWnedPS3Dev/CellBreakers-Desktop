@@ -4,236 +4,502 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CellBreakers Desktop - Downloads</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * {margin:0; padding:0; box-sizing:border-box;}
     body {
       font-family: 'Segoe UI', sans-serif;
-      overflow: hidden;
       background: linear-gradient(135deg, #00111a, #003366);
       height: 100vh;
       color: white;
-      position: relative;
-      transition: color 0.3s;
+      overflow: hidden;
     }
-    canvas#particles {position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;}
-    :root {
-      --card: rgba(0, 0, 0, 0.85);
-      --accent: #0077ff;
+    
+    .header {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 85px;
+      background: rgba(0,20,40,0.98);
+      backdrop-filter: blur(30px);
+      padding: 0 30px;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .light {
-      --card: rgba(255, 255, 255, 0.9);
-      --accent: #0055ff;
-      color: #111;
+    
+    h1 { 
+      font-size: 1.7rem; 
+      font-weight: 900; 
+      background: linear-gradient(135deg, #00d4ff, #fff, #a8e6ff); 
+      background-clip: text; 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+      display: flex; align-items: center; gap: 15px;
     }
-    header {
-      position: relative;
-      z-index: 1;
-      padding: 20px;
+    
+    .header-controls {
+      display: flex; gap: 12px; align-items: center;
+    }
+    
+    .btn {
+      height: 44px;
+      padding: 0 24px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+    }
+    .btn-primary { background: linear-gradient(145deg, #0088ff, #00d4ff); color: white; }
+    .btn-success { background: linear-gradient(145deg, #00c851, #00e676); color: white; }
+    .btn-danger { background: linear-gradient(145deg, #ff416c, #ff4b2b); color: white; }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+    
+    .main-container {
+      position: absolute;
+      top: 85px; bottom: 0; left: 0; right: 0;
+      padding: 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(25px);
+      padding: 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+      max-width: 700px;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 16px 24px;
+      border-radius: 16px;
+      cursor: pointer;
       text-align: center;
-      font-size: 2rem;
-      font-weight: bold;
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
-      animation: fadeIn 1.5s ease-in-out;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.3s;
+      background: transparent;
     }
-    .container {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      width: 90%;
-      max-width: 1200px;
-      margin: 0 auto;
+    .tab.active {
+      background: linear-gradient(145deg, rgba(0,212,255,0.3), rgba(0,136,255,0.3));
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,212,255,0.2);
     }
-    .downloads-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      max-height: 60vh;
+    
+    .download-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 70vh;
       overflow-y: auto;
     }
-    .download-box {
-      background: var(--card);
-      backdrop-filter: blur(10px);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
+    
+    .download-item {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 25px;
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
     }
-    .download-box:hover {
-      transform: scale(1.03);
+    
+    .download-item::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     }
+    
+    .download-item:hover {
+      transform: translateY(-8px);
+      background: rgba(0,212,255,0.15);
+      border-color: rgba(0,212,255,0.4);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+    
     .download-icon {
-      font-size: 3rem;
-      margin-bottom: 10px;
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.1);
     }
-    .download-title {
-      color: var(--accent);
+    
+    .download-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .download-name {
       font-size: 1.3rem;
-      font-weight: bold;
-      margin-bottom: 5px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .download-desc {
-      color: #ccc;
-      font-size: 0.95rem;
-      margin-bottom: 10px;
+    
+    .download-details {
+      display: flex;
+      gap: 20px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
     }
-    .light .download-desc {
-      color: #666;
+    
+    .download-actions {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
     }
-    .download-count {
-      color: #aaa;
-      font-size: 0.8rem;
-      margin-bottom: 10px;
+    
+    .status-badge {
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      white-space: nowrap;
+      background: rgba(76,175,80,0.3);
+      color: #4caf50;
     }
-    .light .download-count {
-      color: #777;
+    
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 40px;
+      color: rgba(255,255,255,0.6);
     }
-    .download-btn {
-      background: var(--accent);
-      border: none;
-      border-radius: 6px;
-      padding: 10px 20px;
+    
+    .empty-state i { font-size: 6rem; margin-bottom: 30px; opacity: 0.5; }
+    
+    .folder-input {
+      padding: 15px;
+      background: rgba(255,255,255,0.1);
+      border: 2px dashed rgba(0,212,255,0.5);
+      border-radius: 16px;
       color: white;
-      font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
+      text-align: center;
+      transition: all 0.3s;
     }
-    .download-btn:hover {
-      background: #00aaff;
-      transform: translateY(-2px);
+    .folder-input:hover {
+      background: rgba(0,212,255,0.15);
     }
-    button.back-btn {
-      margin-top: 25px;
-      padding: 10px 25px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: var(--accent);
-      color: white;
-      font-weight: bold;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-    button.back-btn:hover {
-      background: #00aaff;
-      transform: translateY(-2px);
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    
+    @media (max-width: 768px) {
+      .header { flex-direction: column; gap: 20px; height: 140px; padding: 25px; }
+      .main-container { padding: 20px; }
+      .download-item { flex-direction: column; text-align: center; gap: 20px; }
     }
   </style>
 </head>
 <body>
-  <canvas id="particles"></canvas>
-  <div class="container">
-    <header>Most Popular Downloads on our app</header>
-    <div class="downloads-grid">
-      <div class="download-box">
-        <div class="download-icon">📥</div>
-        <div class="download-title">multiMAN</div>
-        <div class="download-desc">The ultimate PS3 file manager and backup loader.</div>
-        <div class="download-count">2,480,000+ downloads</div>
-        <button class="download-btn" onclick="window.location.href='https://example.com/multiman.pkg'">Download</button>
-      </div>
+  <div class="header">
+    <h1><i class="fas fa-download"></i> Downloads</h1>
+    <div class="header-controls">
+      <button class="btn btn-primary" onclick="selectFolder()">
+        <i class="fas fa-folder"></i> Select Folder
+      </button>
+      <button class="btn btn-success" onclick="refreshDownloads()">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+      <button class="btn btn-danger" onclick="clearList()">
+        <i class="fas fa-trash"></i> Clear
+      </button>
+    </div>
+  </div>
 
-      <div class="download-box">
-        <div class="download-icon">🌐</div>
-        <div class="download-title">webMAN MOD</div>
-        <div class="download-desc">Powerful web server plugin for PS3 — mount games directly.</div>
-        <div class="download-count">1,980,000+ downloads</div>
-        <button class="download-btn" onclick="window.location.href='https://example.com/webmanmod.pkg'">Download</button>
-      </div>
+  <div class="main-container">
+    <div id="folderInfo" style="display:none; background: rgba(0,212,255,0.2); padding: 20px; border-radius: 16px; border-left: 4px solid #00d4ff;">
+      <strong>📁 Loaded Folder:</strong> <span id="folderPath"></span>
+      <button onclick="selectFolder()" style="margin-left: auto; padding: 8px 16px; background: #00d4ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Change</button>
+    </div>
 
-      <div class="download-box">
-        <div class="download-icon">🎮</div>
-        <div class="download-title">IRISMAN</div>
-        <div class="download-desc">A versatile backup manager with great performance and UI.</div>
-        <div class="download-count">1,250,000+ downloads</div>
-        <button class="download-btn" onclick="window.location.href='https://example.com/irisman.pkg'">Download</button>
-      </div>
-
-      <div class="download-box">
-        <div class="download-icon">🔒</div>
-        <div class="download-title">Apollo Save Tool</div>
-        <div class="download-desc">Manage, resign, and unlock your PS3 game saves easily.</div>
-        <div class="download-count">870,000+ downloads</div>
-        <button class="download-btn" onclick="window.location.href='https://example.com/apollo.pkg'">Download</button>
+    <div id="noFolderInfo" style="display:block;">
+      <div class="folder-input" onclick="selectFolder()">
+        <i class="fas fa-folder-plus" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
+        <div style="font-size: 1.2rem; margin-top: 10px; font-weight: 700;">Select Downloads Folder</div>
+        <div style="opacity: 0.7; margin-top: 5px;">Click here to choose a folder to scan for files</div>
       </div>
     </div>
-    <button class="back-btn" onclick="window.location.href='index.html'">Back to Home</button>
+
+    <div class="tabs" id="tabsContainer" style="display:none;">
+      <div class="tab active" onclick="switchTab('all')">All (<span id="count-all">0</span>)</div>
+      <div class="tab" onclick="switchTab('other')">Other (<span id="count-other">0</span>)</div>
+    </div>
+
+    <div class="download-list" id="downloadList">
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <div style="font-size: 1.3rem; margin-top: 20px; font-weight: 700;">No Folder Selected</div>
+        <div style="opacity: 0.7; margin-top: 10px;">Select a folder above to view files</div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // === Particle System ===
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d');
-    let particlesArray = [];
-    const colors = ['#00aaff', '#0077ff', '#003366'];
+    let downloads = [];
+    let currentTab = 'all';
+    let selectedFolderHandle = null;
+    const MAX_DOWNLOADS = 10;
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    class Particle {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 1;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-        this.color = colors[Math.floor(Math.random() * colors.length)];
-      }
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-      }
+    // File type icons
+    function getFileIcon(filename) {
+      const ext = filename.split('.').pop().toLowerCase();
+      const iconMap = {
+        'exe': 'fas fa-cog', 'msi': 'fas fa-cube', 'zip': 'fas fa-file-zipper',
+        'rar': 'fas fa-file-zipper', '7z': 'fas fa-file-zipper', 'pkg': 'fas fa-cubes',
+        'iso': 'fas fa-compact-disc', 'torrent': 'fas fa-magnet', 'pdf': 'fas fa-file-pdf',
+        'doc': 'fas fa-file-word', 'docx': 'fas fa-file-word', 'xls': 'fas fa-file-excel',
+        'xlsx': 'fas fa-file-excel', 'mp4': 'fas fa-file-video', 'mkv': 'fas fa-file-video',
+        'avi': 'fas fa-file-video', 'mp3': 'fas fa-file-audio', 'wav': 'fas fa-file-audio',
+        'jpg': 'fas fa-file-image', 'png': 'fas fa-file-image', 'gif': 'fas fa-file-image',
+        'default': 'fas fa-file'
+      };
+      return iconMap[ext] || iconMap['default'];
     }
 
-    function initParticles() {
-      particlesArray = [];
-      for (let i = 0; i < 80; i++) {
-        particlesArray.push(new Particle());
-      }
-    }
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particlesArray.forEach(p => { p.update(); p.draw(); });
-      requestAnimationFrame(animateParticles);
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
     }
 
-    // === Local Storage Settings ===
-    function loadSettings() {
-      const bg = localStorage.getItem('bg');
-      const particlesEnabled = localStorage.getItem('particles') === 'true';
-      const theme = localStorage.getItem('theme') || 'dark';
-
-      if (bg) {
-        document.body.style.background = `linear-gradient(135deg, ${bg})`;
-      }
-      if (theme === 'light') {
-        document.body.classList.add('light');
-      }
-      if (!particlesEnabled) {
-        canvas.style.display = 'none';
-      } else {
-        canvas.style.display = 'block';
-        initParticles();
-        animateParticles();
+    // ACTUAL USER FOLDER SELECTION - File System Access API
+    async function selectFolder() {
+      try {
+        // This uses the File System Access API (modern browsers)
+        selectedFolderHandle = await window.showDirectoryPicker();
+        await scanFolderRecursive();
+      } catch (error) {
+        // Fallback for older browsers
+        fallbackFolderSelection();
       }
     }
 
-    loadSettings();
+    async function scanFolderRecursive() {
+      if (!selectedFolderHandle) return;
+
+      downloads = [];
+      const folderName = selectedFolderHandle.name;
+      document.getElementById('folderPath').textContent = folderName;
+      document.getElementById('folderInfo').style.display = 'flex';
+      document.getElementById('noFolderInfo').style.display = 'none';
+      document.getElementById('tabsContainer').style.display = 'flex';
+
+      try {
+        // Recursively scan folder
+        await recursiveScan(selectedFolderHandle, '');
+        downloads.sort((a, b) => b.modifiedTime - a.modifiedTime);
+        downloads = downloads.slice(0, MAX_DOWNLOADS);
+        renderDownloads();
+      } catch (error) {
+        console.error('Scan error:', error);
+        alert('Error scanning folder: ' + error.message);
+      }
+    }
+
+    async function recursiveScan(dirHandle, currentPath) {
+      try {
+        for await (const entry of dirHandle.values()) {
+          if (entry.kind === 'file') {
+            try {
+              const file = await entry.getFile();
+              downloads.push({
+                id: currentPath + '/' + entry.name,
+                name: entry.name,
+                size: formatFileSize(file.size),
+                sizeBytes: file.size,
+                icon: getFileIcon(entry.name),
+                path: currentPath ? `${currentPath}/${entry.name}` : entry.name,
+                modifiedTime: file.lastModified,
+                dateObj: new Date(file.lastModified),
+                file: file,
+                handle: entry
+              });
+            } catch (e) {
+              // Skip files we can't read
+            }
+          } else if (entry.kind === 'directory') {
+            // Recursively scan subdirectories
+            try {
+              const subDirHandle = await dirHandle.getDirectoryHandle(entry.name);
+              await recursiveScan(subDirHandle, currentPath ? `${currentPath}/${entry.name}` : entry.name);
+            } catch (e) {
+              // Skip directories we can't read
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error scanning directory:', error);
+      }
+    }
+
+    // Fallback for older browsers - file input
+    function fallbackFolderSelection() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.webkitdirectory = true;
+      input.multiple = true;
+      
+      input.onchange = async (e) => {
+        downloads = [];
+        const files = Array.from(e.target.files).slice(0, MAX_DOWNLOADS);
+        
+        files.forEach(file => {
+          downloads.push({
+            id: file.webkitRelativePath || file.name,
+            name: file.name,
+            size: formatFileSize(file.size),
+            sizeBytes: file.size,
+            icon: getFileIcon(file.name),
+            path: file.webkitRelativePath || file.name,
+            modifiedTime: file.lastModified,
+            dateObj: new Date(file.lastModified),
+            file: file
+          });
+        });
+
+        downloads.sort((a, b) => b.modifiedTime - a.modifiedTime);
+        
+        const folderName = downloads[0]?.path.split('/')[0] || 'Selected Folder';
+        document.getElementById('folderPath').textContent = folderName;
+        document.getElementById('folderInfo').style.display = 'flex';
+        document.getElementById('noFolderInfo').style.display = 'none';
+        document.getElementById('tabsContainer').style.display = 'flex';
+        
+        renderDownloads();
+      };
+      
+      input.click();
+    }
+
+    function renderDownloads() {
+      const list = document.getElementById('downloadList');
+      
+      const filtered = downloads.filter(d => {
+        if (currentTab === 'all') return true;
+        return false;
+      });
+
+      document.getElementById('count-all').textContent = downloads.length;
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <div style="font-size: 1.3rem; margin-top: 20px; font-weight: 700;">No Files Found</div>
+            <div style="opacity: 0.7; margin-top: 10px;">Select a different folder</div>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = filtered.map(file => `
+        <div class="download-item">
+          <div class="download-icon">
+            <i class="${file.icon}"></i>
+          </div>
+          <div class="download-info">
+            <div class="download-name">${file.name}</div>
+            <div class="download-details">
+              <span>📦 ${file.size}</span>
+              <span>📅 ${file.dateObj.toLocaleString()}</span>
+              <span>📍 ${file.path.substring(0, 50)}${file.path.length > 50 ? '...' : ''}</span>
+            </div>
+          </div>
+          <div class="status-badge">✓ READY</div>
+          <div class="download-actions">
+            <button class="btn btn-success" onclick="downloadFile('${file.name}')" style="padding: 8px 16px; font-size: 0.8rem;" title="Download">
+              <i class="fas fa-download"></i>
+            </button>
+            <button class="btn btn-primary" onclick="viewFile('${file.name}')" style="padding: 8px 16px; font-size: 0.8rem;" title="View">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.closest('.tab').classList.add('active');
+      renderDownloads();
+    }
+
+    function refreshDownloads() {
+      if (selectedFolderHandle) {
+        scanFolderRecursive();
+      }
+    }
+
+    async function downloadFile(filename) {
+      const file = downloads.find(f => f.name === filename);
+      if (file && file.file) {
+        const url = URL.createObjectURL(file.file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function viewFile(filename) {
+      const file = downloads.find(f => f.name === filename);
+      if (file && file.file) {
+        const url = URL.createObjectURL(file.file);
+        window.open(url, '_blank');
+      }
+    }
+
+    function clearList() {
+      downloads = [];
+      selectedFolderHandle = null;
+      document.getElementById('folderInfo').style.display = 'none';
+      document.getElementById('noFolderInfo').style.display = 'block';
+      document.getElementById('tabsContainer').style.display = 'none';
+      renderDownloads();
+    }
+
+    // Load saved folder on startup
+    window.addEventListener('load', () => {
+      // Try to restore previous folder if permission granted
+      if (localStorage.getItem('folderHandle')) {
+        // Note: Can't persist folder handles - user must select again per session
+      }
+    });
   </script>
 </body>
 </html>
