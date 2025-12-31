@@ -1,94 +1,369 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CellBreakers Desktop - Community</title>
-<style>
-  * {margin:0; padding:0; box-sizing:border-box;}
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    overflow: auto;
-    background: linear-gradient(135deg, #00111a, #003366);
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-  }
-  canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
-  .container {position:relative; z-index:1; width:90%; max-width:1200px; margin-top:50px;}
-  h1 {font-size:2.5rem; letter-spacing:2px; text-shadow:0 0 10px rgba(0,0,0,0.7); margin-bottom:20px; text-align:center;}
-  .grid {display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px;}
-  .card {background: rgba(0,0,0,0.6); padding:15px; border-radius:10px; text-align:center; transition:0.3s; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .card:hover {background: rgba(0,0,0,0.85); transform: translateY(-5px);}
-  .card img {width:80px; height:80px; object-fit:contain; margin-bottom:10px;}
-  .card p {font-size:1rem; word-break: break-word; color:#fff;}
-  button {margin-top:10px; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;}
-  button:hover {background:#00aaff;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellBreakers - Community</title>
+  <link rel="icon" href="assets/img/favicon.png" />
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+
+    :root{
+      --bg1: #00111a;
+      --bg2: #003366;
+      --card: rgba(0, 0, 0, 0.80);
+      --panel: rgba(0,0,0,0.35);
+      --border: rgba(255,255,255,0.12);
+      --accent: #0077ff;
+      --text: #fff;
+    }
+
+    body{
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+      color: var(--text);
+      padding: 20px;
+    }
+
+    body.light{
+      --card: rgba(255,255,255,0.9);
+      --panel: rgba(255,255,255,0.65);
+      --border: rgba(0,0,0,0.12);
+      --accent: #0055ff;
+      --text: #111;
+    }
+
+    header{
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 900;
+      margin: 10px 0 16px;
+      text-shadow: 0 0 10px rgba(0,0,0,0.7);
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:center;
+      margin-bottom: 14px;
+    }
+    .topbar button{
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: 0.2s;
+    }
+    .topbar button:hover{ background:#00aaff; transform: translateY(-1px); }
+
+    .wrap{ max-width: 1200px; margin: 0 auto; }
+
+    .toolbar{
+      display: grid;
+      grid-template-columns: 1fr 220px 160px;
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 12px;
+    }
+    @media (max-width: 820px){
+      .toolbar{ grid-template-columns: 1fr; }
+    }
+    .toolbar input, .toolbar select{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: inherit;
+      outline: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .stats{
+      font-size: 12px;
+      opacity: 0.85;
+      margin: 6px 0 10px;
+      text-align: center;
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.15s;
+    }
+    .card:hover{ transform: translateY(-2px); }
+
+    .title{
+      font-weight: 900;
+      font-size: 16px;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .meta{
+      font-size: 12px;
+      opacity: 0.85;
+      margin-top: 4px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .tags{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .tag{
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid var(--border);
+      opacity: 0.95;
+      user-select: none;
+    }
+
+    .buttons{
+      display:flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .btn{
+      flex: 1;
+      min-width: 140px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: 0.2s;
+    }
+    .btn:hover{ background:#00aaff; transform: translateY(-1px); }
+    .btn.secondary{
+      background: rgba(255,255,255,0.14);
+      color: inherit;
+      border: 1px solid var(--border);
+    }
+    .btn.secondary:hover{ background: rgba(255,255,255,0.22); }
+
+    .empty{
+      text-align: center;
+      padding: 30px 10px;
+      opacity: 0.85;
+    }
+  </style>
 </head>
 <body>
-<canvas id="particles"></canvas>
-<div class="container">
-  <h1>Community-Made</h1>
-  <div class="grid" id="communityGrid"></div>
-</div>
+  <header>CellBreakers - Community Projects</header>
 
-<script>
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-let particlesArray = [];
+  <div class="topbar">
+    <button type="button" onclick="window.location.href='index.html'">Back to Home</button>
+  </div>
 
-// Particle animation
-function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-window.addEventListener('resize',resizeCanvas);resizeCanvas();
-class Particle{
-  constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.size=Math.random()*2+1;this.speedX=(Math.random()-0.5)*0.5;this.speedY=(Math.random()-0.5)*0.5;this.color=['#00aaff','#0077ff','#003366'][Math.floor(Math.random()*3)];}
-  update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>canvas.width)this.speedX*=-1;if(this.y<0||this.y>canvas.height)this.speedY*=-1;}
-  draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();}
-}
-function initParticles(){particlesArray=[];for(let i=0;i<80;i++){particlesArray.push(new Particle());}}
-function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particlesArray.forEach(p=>{p.update();p.draw();});requestAnimationFrame(animateParticles);} 
-initParticles();animateParticles();
+  <div class="wrap">
+    <div class="toolbar">
+      <input id="search" type="text" placeholder="Search projects (name, author, tags)..." />
+      <select id="tagFilter">
+        <option value="">All tags</option>
+      </select>
+      <select id="sortBy">
+        <option value="nameAsc">A → Z</option>
+        <option value="nameDesc">Z → A</option>
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+      </select>
+    </div>
 
-// Load user settings
-function loadSettings(){
-  const bg = localStorage.getItem('bg');
-  const particlesEnabled = localStorage.getItem('particles')==='true';
-  if(bg) document.body.style.background = `linear-gradient(135deg, ${bg})`;
-  if(!particlesEnabled){cancelAnimationFrame(animateParticles);canvas.style.display='none';}
-}
-loadSettings();
+    <div class="stats" id="stats">0 projects</div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none;">No projects found.</div>
+  </div>
 
-const communityGrid = document.getElementById('communityGrid');
+  <script>
+    // Theme via localStorage
+    const theme = localStorage.getItem('theme');
+    if (theme === 'light') document.body.classList.add('light');
 
-// Fetch community-made items from database/CSV
-async function fetchCommunity(){
-  try{
-    const url = 'https://example.com/community.csv'; // replace with your actual DB/CSV
-    const res = await fetch(url);
-    const text = await res.text();
-    const rows = text.split('\n').slice(1); // skip header
-    rows.forEach(row=>{
-      const [title,thumbnail,downloadURL] = row.split(',');
-      if(title){
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.innerHTML = `
-          <img src="${thumbnail || 'https://via.placeholder.com/80'}" alt="${title}">
-          <p>${title}</p>
-          <button onclick="window.location.href='${downloadURL}'">Download</button>
-        `;
-        communityGrid.appendChild(card);
+    // Community projects
+    const PROJECTS = [
+      {
+        name: "ReClassic 2.03 (CFW editions)",
+        author: "PS3 ReClassic Team (Jesser and RoguePatron)",
+        date: "2025-12-30",
+        tags: ["ps3", "cfw", "pkg", "reclassic"],
+        description: "ReClassic 2.03 packages for CFW setups (choose edition).",
+        links: {
+          download1: { label: "CFW (2.40 Edition)", url: "https://www.mediafire.com/file/h81pcpciihgzllb/ReClassic+2.03+(2.40+Edition).pkg/file" },
+          download2: { label: "CFW (2.50 Edition)", url: "https://www.mediafire.com/file/heio2bbgtdoya7m/ReClassic+2.03+(2.50+Edition).pkg/file" }
+        }
+      },
+      {
+        name: "ReClassic 2.03 (For HEN editions)",
+        author: "PS3 ReClassic Team (Jesser and RoguePatron)",
+        date: "2025-12-30",
+        tags: ["ps3", "hen", "pkg", "reclassic"],
+        description: "ReClassic 2.03 packages intended for PS3HEN users (choose edition).",
+        links: {
+          download1: { label: "HEN (2.40 Edition)", url: "https://www.mediafire.com/file/jxbgppm37cc7e6m/ReClassic+2.03+For+HEN+(2.40+Edition).pkg/file" },
+          download2: { label: "HEN (2.50 Edition)", url: "https://www.mediafire.com/file/hg68ygqg9unrp5a/ReClassic+2.03+For+HEN+(2.50+Edition).pkg/file" }
+        }
+      },
+      {
+        name: "ReClassic Extras (Utilities + Waves)",
+        author: "PS3 ReClassic Team (Jesser and RoguePatron)",
+        date: "2025-12-30",
+        tags: ["ps3", "tools", "pkg", "zip", "reclassic"],
+        description: "Extras: revert Spotify + save utils + photo gallery, plus the Waves pack.",
+        links: {
+          download1: { label: "Utilities PKG", url: "https://www.mediafire.com/file/xlwh7bfd7v2im4z/Revert+Spotify+++Current+Save+Utils+++Photo+Gallery.pkg/file" },
+          download2: { label: "Waves ZIP", url: "https://www.mediafire.com/file/gyb0wclu6xgr4ue/ReClassic+Waves.zip/file" }
+        }
+      },
+
+      // NEW: Xenity Engine
+      {
+        name: "Xenity Engine (PSP/PSVita/PS3)",
+        author: "Fewnity",
+        date: "2025-07-14",
+        tags: ["ps3", "psp", "psvita", "gamedev", "engine", "c++"],
+        description: "Cross-platform game engine supporting PSP, PS Vita, PS3 and Windows (open-source).",
+        links: {
+          github: "https://github.com/Fewnity/Xenity-Engine",
+          download1: { label: "Docs / Website", url: "https://fewnity.github.io/Xenity-Engine/" }
+        }
+      },
+
+      // NEW: PS3 Manager.bat (set your real link)
+      {
+        name: "PS3 Manager.bat",
+        author: "ArabicGamer12",
+        date: "2025-12-24",
+        tags: ["ps3", "batch", "windows", "utility"],
+        description: "Windows batch helper for PS3 tasks. ",
+        links: {
+          download1: { label: "Download", url: "https://cdn.discordapp.com/attachments/1323808067594227804/1453295215027814462/PS3Manger.bat?ex=69542e64&is=6952dce4&hm=5b4b6c92ab0beb39f46133e1ac461371ccd8a52c35eb318245751a9c7e21eb59&" }
+        }
       }
-    });
-  }catch(e){
-    console.error('Failed to fetch community items:',e);
-  }
-}
-fetchCommunity();
-</script>
+    ];
+
+    const grid = document.getElementById("grid");
+    const stats = document.getElementById("stats");
+    const empty = document.getElementById("empty");
+    const searchEl = document.getElementById("search");
+    const tagFilterEl = document.getElementById("tagFilter");
+    const sortByEl = document.getElementById("sortBy");
+
+    function safe(s){
+      return String(s ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+    }
+
+    function fillTagFilter(){
+      const tagSet = new Set();
+      PROJECTS.forEach(p => (p.tags || []).forEach(t => tagSet.add(String(t).trim().toLowerCase())));
+      const tags = [...tagSet].filter(Boolean).sort();
+      tagFilterEl.innerHTML = `<option value="">All tags</option>` +
+        tags.map(t => `<option value="${t}">${t}</option>`).join("");
+    }
+
+    function matches(p, term, tag){
+      const hay = [
+        p.name, p.author, p.description,
+        ...(p.tags || [])
+      ].join(" ").toLowerCase();
+
+      if (term && !hay.includes(term)) return false;
+      if (tag && !(p.tags || []).map(x => String(x).toLowerCase()).includes(tag)) return false;
+      return true;
+    }
+
+    function buildButtons(p){
+      const btns = [];
+      const L = p.links || {};
+
+      if (L.github) {
+        btns.push(`<button class="btn" type="button" onclick="window.open('${L.github}', '_blank')">GitHub</button>`);
+      }
+
+      ["download", "download1", "download2", "download3"].forEach(k => {
+        const v = L[k];
+        if (!v) return;
+
+        if (typeof v === "string") {
+          btns.push(`<button class="btn secondary" type="button" onclick="window.open('${v}', '_blank')">Download</button>`);
+          return;
+        }
+
+        if (v.url) {
+          btns.push(`<button class="btn secondary" type="button" onclick="window.open('${v.url}', '_blank')">${safe(v.label || "Download")}</button>`);
+        }
+      });
+
+      return btns.join("");
+    }
+
+    function render(){
+      const term = searchEl.value.trim().toLowerCase();
+      const tag = tagFilterEl.value.trim().toLowerCase();
+      const sort = sortByEl.value;
+
+      let list = PROJECTS.filter(p => matches(p, term, tag));
+
+      const collator = new Intl.Collator(undefined, { sensitivity: "base" });
+      if (sort === "nameAsc") list.sort((a,b) => collator.compare(a.name, b.name));
+      if (sort === "nameDesc") list.sort((a,b) => collator.compare(b.name, a.name));
+      if (sort === "newest") list.sort((a,b) => (Date.parse(b.date)||0) - (Date.parse(a.date)||0));
+      if (sort === "oldest") list.sort((a,b) => (Date.parse(a.date)||0) - (Date.parse(b.date)||0));
+
+      stats.textContent = `${list.length} project${list.length === 1 ? "" : "s"}`;
+      grid.innerHTML = "";
+
+      if (!list.length){
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+
+      list.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const tagsHtml = (p.tags || []).map(t => `<span class="tag">${safe(t)}</span>`).join("");
+        const buttonsHtml = buildButtons(p);
+
+        card.innerHTML = `
+          <div class="title">${safe(p.name)}</div>
+          <div class="meta">By: ${safe(p.author || "Unknown")} • Date: ${safe(p.date || "N/A")}</div>
+          <div class="meta">${safe(p.description || "")}</div>
+          <div class="tags">${tagsHtml}</div>
+          <div class="buttons">${buttonsHtml}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    fillTagFilter();
+    render();
+
+    searchEl.addEventListener("input", render);
+    tagFilterEl.addEventListener("change", render);
+    sortByEl.addEventListener("change", render);
+  </script>
 </body>
 </html>

@@ -21,7 +21,24 @@
     body.light {
       color: black;
     }
+
     canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
+
+    /* --- Back to Home bar (IMPLEMENTED) --- */
+    .topbar{
+      position: fixed;
+      top: 16px;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .topbar button{
+      pointer-events: auto;
+    }
+
     .container {position:relative; z-index:1; text-align:center; width: 80%; max-width: 800px;}
     h1 {font-size:2.5rem; letter-spacing:2px; text-shadow: 0 0 10px rgba(0,0,0,0.7); margin-bottom:30px;}
     .setting {background: rgba(0,0,0,0.6); padding:15px 20px; margin:10px 0; border-radius:8px; display:flex; justify-content: space-between; align-items:center;}
@@ -40,9 +57,16 @@
 </head>
 <body>
   <canvas id="particles"></canvas>
+
+  <!-- IMPLEMENTED -->
+  <div class="topbar">
+    <button type="button" onclick="window.location.href='index.html'">Back to Home</button>
+  </div>
+
   <div class="container">
     <h1>Built-in PS3 File Hash Checker</h1>
     <p id="note">Select a file or folder to compute hashes. Useful for verifying PS3 firmware (PUP), packages (PKG), and jailbreak (JB) folders.</p>
+
     <div class="setting">
       <label>Select File/Folder</label>
       <input type="file" id="fileInput" webkitdirectory multiple>
@@ -73,6 +97,7 @@
       <pre id="result"></pre>
     </div>
   </div>
+
   <script>
     const canvas = document.getElementById('particles');
     let enableParticles = false;
@@ -209,7 +234,7 @@
 
       try {
         for (const file of files) {
-          if (file.size === 0) continue; // Skip empty files/directories
+          if (file.size === 0) continue;
           const relativePath = file.webkitRelativePath || file.name;
           const hash = await hashFile(file, algo);
           results.push(`${algo} (${relativePath}): ${hash}`);

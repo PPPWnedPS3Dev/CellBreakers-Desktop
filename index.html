@@ -140,6 +140,15 @@
     .add-buttons button.cancel {background: rgba(255, 255, 255, 0.2);}
     .add-buttons button.cancel:hover {background: rgba(255, 255, 255, 0.3);}
     @keyframes slideIn {from {transform: translateY(-20px); opacity: 0;} to {transform: translateY(0); opacity: 1;}}
+
+    /* === Logwork Countdown placement === */
+    .countdown-wrap{
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+    }
   </style>
 </head>
 <body>
@@ -159,9 +168,6 @@
       </li>
       <li onclick="window.location.href='example.html'">
         <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> About App
-      </li>
-      <li onclick="window.location.href='example.html'">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Help & Support
       </li>
     </ul>
 
@@ -218,6 +224,17 @@
   <div class="container">
     <h1 id="mainText">CellBreakers Desktop</h1>
     <div class="welcome" id="welcomeText">Welcome Back!</div>
+
+    <!-- Logwork Countdown -->
+    <div class="countdown-wrap">
+      <a href="https://logwork.com/countdown-timer"
+         class="countdown-timer"
+         data-style="columns"
+         data-timezone="Europe/Zurich"
+         data-date="2026-01-01 00:00">
+        CellBreakers Countdown
+      </a>
+    </div>
   </div>
 
   <div class="dock" id="dock"></div>
@@ -390,5 +407,8 @@
 
     loadSettings();
   </script>
+
+  <!-- Logwork Countdown Loader -->
+  <script src="https://cdn.logwork.com/widget/countdown.js"></script>
 </body>
 </html>

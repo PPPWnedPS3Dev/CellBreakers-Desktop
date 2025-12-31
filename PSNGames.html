@@ -20,12 +20,17 @@
     :root {
       --card: rgba(0, 0, 0, 0.85);
       --accent: #0077ff;
+      --panel: rgba(0,0,0,0.45);
+      --panelBorder: rgba(255,255,255,0.12);
     }
     .light {
       --card: rgba(255, 255, 255, 0.9);
       --accent: #0055ff;
+      --panel: rgba(255,255,255,0.70);
+      --panelBorder: rgba(0,0,0,0.12);
       color: #111;
     }
+
     header {
       position: relative;
       z-index: 1;
@@ -36,6 +41,66 @@
       text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
       animation: fadeIn 1.5s ease-in-out;
     }
+
+    /* Top bar */
+    .topbar{
+      position: relative;
+      z-index: 1;
+      display:flex;
+      justify-content:center;
+      gap: 10px;
+      padding: 0 20px 10px;
+      flex-wrap: wrap;
+    }
+    .topbar button{
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .topbar button:hover { background: #00aaff; transform: translateY(-2px); }
+
+    /* Filters */
+    .filters{
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 10px;
+      display: grid;
+      grid-template-columns: 1fr 180px 220px;
+      gap: 10px;
+      align-items: center;
+    }
+    @media (max-width: 820px){
+      .filters{ grid-template-columns: 1fr; }
+    }
+
+    .filters input, .filters select{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--panelBorder);
+      background: var(--panel);
+      color: inherit;
+      outline: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .stats{
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 8px;
+      opacity: 0.85;
+      font-size: 12px;
+    }
+
+    /* List */
     .container {
       position: relative;
       z-index: 1;
@@ -57,8 +122,8 @@
     .card:hover { transform: scale(1.03); }
     .title { font-size: 18px; font-weight: 600; }
     .meta { font-size: 12px; opacity: 0.7; margin-top: 4px; }
-    .buttons { margin-top: 10px; display: flex; gap: 10px; }
-    button {
+    .buttons { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .buttons button {
       background: var(--accent);
       color: white;
       border: none;
@@ -67,10 +132,11 @@
       cursor: pointer;
       transition: background 0.3s ease, transform 0.2s ease;
     }
-    button:hover {
+    .buttons button:hover {
       background: #00aaff;
       transform: translateY(-2px);
     }
+
     .offline {
       position: relative;
       z-index: 1;
@@ -78,66 +144,49 @@
       margin-top: 50px;
       color: rgba(255, 255, 255, 0.7);
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
   <canvas id="particles"></canvas>
   <header>CellBreakers - PSN Games Library</header>
+
+  <div class="topbar">
+    <button type="button" onclick="window.location.href='index.html'">Back to Home</button>
+  </div>
+
+  <div class="filters">
+    <input id="search" type="text" placeholder="Search game name / ID / Content ID..." />
+    <select id="regionFilter">
+      <option value="">All Regions</option>
+    </select>
+    <select id="sortBy">
+      <option value="nameAsc">A → Z (Name)</option>
+      <option value="nameDesc">Z → A (Name)</option>
+      <option value="sizeDesc">Largest → Smallest</option>
+      <option value="sizeAsc">Smallest → Largest</option>
+      <option value="dateDesc">Newest → Oldest</option>
+      <option value="dateAsc">Oldest → Newest</option>
+    </select>
+  </div>
+
+  <div class="stats" id="stats">Loading…</div>
+
   <div class="container" id="games"></div>
-  <div class="offline" id="offline" style="display:none;">⚠Cannot fetch data.</div>
+  <div class="offline" id="offline" style="display:none;">Cannot fetch data.</div>
 
   <script>
-    // === Apply saved user settings from localStorage ===
+    // Theme
     const theme = localStorage.getItem('theme');
     if (theme === 'light') document.body.classList.add('light');
 
-    // === Fetch and display PSN games ===
-    async function loadGames() {
-      const container = document.getElementById('games');
-      const offlineMsg = document.getElementById('offline');
-
-      try {
-        const res = await fetch("https://raw.githubusercontent.com/PPPWnedPS3Dev/CellBreakers-Desktop/main/PS3_GAMES.tsv");
-        if (!res.ok) throw new Error('Failed to load PS3_GAMES.tsv');
-        const text = await res.text();
-        const rows = text.trim().split("\n").slice(1); // skip header line
-
-        rows.forEach(row => {
-          const [id, region, name, pkg, rap, cid, date, rapLink, size, sha] = row.split("\t");
-          const card = document.createElement("div");
-          card.className = "card";
-          card.innerHTML = `
-            <div class="title">${name || "Unknown Game"}</div>
-            <div class="meta">Region: ${region || "N/A"} | ID: ${id || "N/A"}</div>
-            <div class="meta">Size: ${size || "Unknown"} | Updated: ${date || "N/A"}</div>
-            <div class="meta">Content ID: ${cid || "N/A"}</div>
-            <div class="buttons">
-              ${pkg ? `<button onclick="window.open('${pkg}', '_blank')">Download .PKG</button>` : ''}
-              ${rapLink ? `<button onclick="window.open('${rapLink}', '_blank')">Download .RAP</button>` : ''}
-            </div>
-          `;
-          container.appendChild(card);
-        });
-      } catch (err) {
-        console.error(err);
-        offlineMsg.style.display = "block";
-      }
-    }
-
-    // === Particles Background ===
+    // Particles
     const canvas = document.getElementById('particles');
     const ctx = canvas.getContext('2d');
     let particlesArray = [];
     const colors = ['#00aaff', '#0077ff', '#003366'];
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
@@ -165,9 +214,7 @@
     }
     function initParticles() {
       particlesArray = [];
-      for (let i = 0; i < 80; i++) {
-        particlesArray.push(new Particle());
-      }
+      for (let i = 0; i < 80; i++) particlesArray.push(new Particle());
     }
     function animateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -177,7 +224,121 @@
     initParticles();
     animateParticles();
 
-    // Load games after setting up particles
+    // Filtering/sorting data
+    const container = document.getElementById('games');
+    const offlineMsg = document.getElementById('offline');
+    const stats = document.getElementById('stats');
+
+    const searchEl = document.getElementById('search');
+    const regionFilterEl = document.getElementById('regionFilter');
+    const sortByEl = document.getElementById('sortBy');
+
+    let allGames = [];
+
+    function parseSizeToBytes(sizeStr) {
+      // Supports "123", "123 MB", "1.5 GB", "1024 KB"
+      if (!sizeStr) return 0;
+      const s = String(sizeStr).trim().toUpperCase();
+      const m = s.match(/([\d.,]+)\s*([KMGTP]?B)?/);
+      if (!m) return 0;
+      const n = parseFloat(m[1].replace(/,/g, ''));
+      if (Number.isNaN(n)) return 0;
+      const unit = (m[2] || 'B').toUpperCase();
+      const mult = unit === 'KB' ? 1024 :
+                   unit === 'MB' ? 1024**2 :
+                   unit === 'GB' ? 1024**3 :
+                   unit === 'TB' ? 1024**4 :
+                   unit === 'PB' ? 1024**5 : 1;
+      return n * mult;
+    }
+
+    function parseDate(dateStr) {
+      // If date is not ISO, this still sorts "unknown" last.
+      const t = Date.parse(dateStr);
+      return Number.isNaN(t) ? 0 : t;
+    }
+
+    function fillRegionFilter(games) {
+      const regions = [...new Set(games.map(g => (g.region || '').trim()).filter(Boolean))].sort();
+      regionFilterEl.innerHTML = `<option value="">All Regions</option>` + regions.map(r => `<option value="${r}">${r}</option>`).join('');
+    }
+
+    function matchesSearch(g, term) {
+      if (!term) return true;
+      const hay = `${g.name} ${g.id} ${g.cid}`.toLowerCase();
+      return hay.includes(term);
+    }
+
+    function applyFiltersAndRender() {
+      const term = searchEl.value.trim().toLowerCase();
+      const region = regionFilterEl.value.trim();
+      const sortBy = sortByEl.value;
+
+      let list = allGames.filter(g => {
+        if (region && (g.region || '').trim() !== region) return false;
+        return matchesSearch(g, term);
+      });
+
+      // Sort
+      const collator = new Intl.Collator(undefined, { sensitivity: 'base', usage: 'sort' });
+      if (sortBy === 'nameAsc') list.sort((a,b) => collator.compare(a.name, b.name)); // localeCompare alternative [web:215]
+      if (sortBy === 'nameDesc') list.sort((a,b) => collator.compare(b.name, a.name));
+      if (sortBy === 'sizeAsc') list.sort((a,b) => a.sizeBytes - b.sizeBytes);
+      if (sortBy === 'sizeDesc') list.sort((a,b) => b.sizeBytes - a.sizeBytes);
+      if (sortBy === 'dateAsc') list.sort((a,b) => a.dateTs - b.dateTs);
+      if (sortBy === 'dateDesc') list.sort((a,b) => b.dateTs - a.dateTs);
+
+      stats.textContent = `Showing ${list.length} / ${allGames.length} games`;
+
+      // Render
+      container.innerHTML = '';
+      list.forEach(g => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="title">${g.name || "Unknown Game"}</div>
+          <div class="meta">Region: ${g.region || "N/A"} | ID: ${g.id || "N/A"}</div>
+          <div class="meta">Size: ${g.size || "Unknown"} | Updated: ${g.date || "N/A"}</div>
+          <div class="meta">Content ID: ${g.cid || "N/A"}</div>
+          <div class="buttons">
+            ${g.pkg ? `<button onclick="window.open('${g.pkg}', '_blank')">Download .PKG</button>` : ''}
+            ${g.rapLink ? `<button onclick="window.open('${g.rapLink}', '_blank')">Download .RAP</button>` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Load TSV
+    async function loadGames() {
+      try {
+        const res = await fetch("https://raw.githubusercontent.com/PPPWnedPS3Dev/CellBreakers-Desktop/main/PS3_GAMES.tsv");
+        if (!res.ok) throw new Error('Failed to load PS3_GAMES.tsv');
+        const text = await res.text();
+        const rows = text.trim().split("\n").slice(1);
+
+        allGames = rows.map(row => {
+          const [id, region, name, pkg, rap, cid, date, rapLink, size, sha] = row.split("\t");
+          return {
+            id, region, name, pkg, rap, cid, date, rapLink, size, sha,
+            sizeBytes: parseSizeToBytes(size), // convert for sorting [web:206]
+            dateTs: parseDate(date)
+          };
+        });
+
+        fillRegionFilter(allGames);
+        applyFiltersAndRender();
+      } catch (err) {
+        console.error(err);
+        offlineMsg.style.display = "block";
+        stats.textContent = "Failed to load data.";
+      }
+    }
+
+    searchEl.addEventListener('input', applyFiltersAndRender);
+    regionFilterEl.addEventListener('change', applyFiltersAndRender);
+    sortByEl.addEventListener('change', applyFiltersAndRender);
+
     loadGames();
   </script>
 </body>

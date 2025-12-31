@@ -13,6 +13,7 @@
       min-height: 100vh;
       padding: 20px;
     }
+
     .header {
       text-align: center;
       margin-bottom: 30px;
@@ -21,25 +22,38 @@
       font-size: 2.5rem;
       letter-spacing: 2px;
     }
-    .back-btn {
-      position: absolute;
-      top: 20px;
-      left: 20px;
+
+    /* --- Back to Home bar (IMPLEMENTED) --- */
+    .topbar{
+      position: fixed;
+      top: 16px;
+      left: 0;
+      right: 0;
+      z-index: 200; /* above cards and modal bg layer start */
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .topbar button{
+      pointer-events: auto;
       padding: 10px 20px;
       background: rgba(255,255,255,0.1);
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       color: white;
       cursor: pointer;
       backdrop-filter: blur(10px);
+      transition: 0.2s;
     }
-    .back-btn:hover {
+    .topbar button:hover {
       background: rgba(255,255,255,0.2);
     }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
     }
+
     .search {
       width: 100%;
       padding: 15px;
@@ -52,6 +66,7 @@
       backdrop-filter: blur(10px);
     }
     .search::placeholder {color: rgba(255,255,255,0.6);}
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -121,6 +136,7 @@
       padding: 50px;
       font-size: 1.2rem;
     }
+
     .modal {
       display: none;
       position: fixed;
@@ -150,19 +166,22 @@
   </style>
 </head>
 <body>
-  <button class="back-btn" onclick="window.location.href='index.html'">← Back</button>
-  
+  <!-- IMPLEMENTED: fixed top centered back button -->
+  <div class="topbar">
+    <button type="button" onclick="window.location.href='index.html'">← Back</button>
+  </div>
+
   <div class="container">
     <div class="header">
       <h1>PS3 Coldboots</h1>
       <p>Browse and download custom coldboot animations & icons</p>
     </div>
-    
+
     <input type="text" class="search" id="search" placeholder="Search coldboots..." />
-    
+
     <div id="loading" class="loading">Loading coldboots from GitHub...</div>
     <div id="error" class="error" style="display:none;"></div>
-    
+
     <div class="grid" id="grid"></div>
   </div>
 
@@ -174,14 +193,14 @@
   <script>
     const COLDBOOT_REPO = 'https://api.github.com/repos/PPPWnedPS3Dev/PS3Coldboots.mirror/contents';
     const ICON_REPO = 'https://api.github.com/repos/PPPWnedPS3Dev/PS3ColdbootsIcons.mirror/contents';
-    
+
     const grid = document.getElementById('grid');
     const loading = document.getElementById('loading');
     const errorDiv = document.getElementById('error');
     const searchInput = document.getElementById('search');
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modalImg');
-    
+
     let allColdboots = [];
 
     async function fetchRepo(url) {
@@ -197,7 +216,6 @@
           fetchRepo(ICON_REPO)
         ]);
 
-        // Create maps for quick lookup
         const iconMap = {};
         icons.forEach(icon => {
           const name = decodeURIComponent(icon.name.split('.').slice(0, -1).join('.'));
@@ -267,19 +285,16 @@
       modalImg.src = '';
     }
 
-    // Search functionality
     searchInput.addEventListener('input', () => {
       const term = searchInput.value.toLowerCase();
       const filtered = allColdboots.filter(cb => cb.name.toLowerCase().includes(term));
       renderColdboots(filtered);
     });
 
-    // Close modal on click outside
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeModal();
     });
 
-    // Load on start
     loadColdboots();
   </script>
 </body>

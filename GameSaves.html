@@ -1,94 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CellBreakers Desktop - Game Saves</title>
-<style>
-  * {margin:0; padding:0; box-sizing:border-box;}
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    overflow: auto;
-    background: linear-gradient(135deg, #00111a, #003366);
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-  }
-  canvas#particles {position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;}
-  .container {position:relative; z-index:1; width:90%; max-width:1200px; margin-top:50px;}
-  h1 {font-size:2.5rem; letter-spacing:2px; text-shadow:0 0 10px rgba(0,0,0,0.7); margin-bottom:20px; text-align:center;}
-  .grid {display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px;}
-  .card {background: rgba(0,0,0,0.6); padding:15px; border-radius:10px; text-align:center; transition:0.3s; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;}
-  .card:hover {background: rgba(0,0,0,0.85); transform: translateY(-5px);}
-  .card img {width:80px; height:80px; object-fit:contain; margin-bottom:10px;}
-  .card p {font-size:1rem; word-break: break-word; color:#fff;}
-  button {margin-top:10px; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; background:#0077ff; color:white; font-weight:bold; transition:0.3s;}
-  button:hover {background:#00aaff;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellBreakers - PS3 100% Saves</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body{
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #00111a, #003366);
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .topbar{
+      position: fixed;
+      top: 16px;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .topbar button{
+      pointer-events: auto;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      backdrop-filter: blur(10px);
+      transition: 0.2s;
+    }
+    .topbar button:hover{ background: rgba(255,255,255,0.2); }
+
+    .wrap{ max-width: 1200px; margin: 0 auto; padding-top: 70px; }
+    header{ text-align:center; margin-bottom: 14px; }
+    header h1{ font-size: 2.2rem; letter-spacing: 1px; margin-bottom: 6px; }
+    header p{ opacity: 0.85; }
+
+    .toolbar{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin: 16px 0 12px;
+      align-items: center;
+    }
+    input[type="text"]{
+      width: 100%;
+      padding: 12px 14px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      outline: none;
+    }
+    input::placeholder{ color: rgba(255,255,255,0.65); }
+
+    .pill{
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+    .card{
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 14px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.15s;
+    }
+    .card:hover{ transform: translateY(-2px); }
+
+    .title{ font-weight: 700; margin-bottom: 8px; line-height: 1.25; }
+    .meta{ font-size: 0.9rem; opacity: 0.85; margin-bottom: 12px; }
+
+    .btn{
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: 0.2s;
+      color: white;
+      background: #0077ff;
+    }
+    .btn:hover{ background:#00aaff; }
+    .btn:disabled{
+      cursor: not-allowed;
+      opacity: 0.7;
+      background: rgba(255,255,255,0.16);
+    }
+
+    .state{ text-align:center; padding: 30px 10px; opacity: 0.88; }
+    .error{
+      color: #ffd0d0;
+      background: rgba(255,0,0,0.12);
+      border: 1px solid rgba(255,0,0,0.25);
+      padding: 14px;
+      border-radius: 12px;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    a { color: #9fd6ff; }
+  </style>
 </head>
 <body>
-<canvas id="particles"></canvas>
-<div class="container">
-  <h1>Game Saves</h1>
-  <div class="grid" id="savesGrid"></div>
-</div>
+  <div class="topbar">
+    <button type="button" onclick="window.location.href='index.html'">Back to Home</button>
+  </div>
 
-<script>
-const canvas = document.getElementById('particles');
-const ctx = canvas.getContext('2d');
-let particlesArray = [];
+  <div class="wrap">
+    <header>
+      <h1>PS3 Game Saves (100%)</h1>
+      <p>Downloads from bucanero/apollo-saves (PS3 folder).</p>
+    </header>
 
-// Particle animation
-function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-window.addEventListener('resize',resizeCanvas);resizeCanvas();
-class Particle{
-  constructor(){this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;this.size=Math.random()*2+1;this.speedX=(Math.random()-0.5)*0.5;this.speedY=(Math.random()-0.5)*0.5;this.color=['#00aaff','#0077ff','#003366'][Math.floor(Math.random()*3)];}
-  update(){this.x+=this.speedX;this.y+=this.speedY;if(this.x<0||this.x>canvas.width)this.speedX*=-1;if(this.y<0||this.y>canvas.height)this.speedY*=-1;}
-  draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=this.color;ctx.fill();}
-}
-function initParticles(){particlesArray=[];for(let i=0;i<80;i++){particlesArray.push(new Particle());}}
-function animateParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particlesArray.forEach(p=>{p.update();p.draw();});requestAnimationFrame(animateParticles);} 
-initParticles();animateParticles();
+    <div class="toolbar">
+      <input id="search" type="text" placeholder="Search game or Title ID (BLUS/BLES/NPUB/...)..." />
+      <div class="pill" id="count">Loading…</div>
+    </div>
 
-// Load user settings
-function loadSettings(){
-  const bg = localStorage.getItem('bg');
-  const particlesEnabled = localStorage.getItem('particles')==='true';
-  if(bg) document.body.style.background = `linear-gradient(135deg, ${bg})`;
-  if(!particlesEnabled){cancelAnimationFrame(animateParticles);canvas.style.display='none';}
-}
-loadSettings();
+    <div id="status" class="state">Loading saves…</div>
+    <div class="grid" id="grid" style="display:none;"></div>
+  </div>
 
-const savesGrid = document.getElementById('savesGrid');
+  <script>
+    const GAMES_TXT = "https://raw.githubusercontent.com/bucanero/apollo-saves/master/PS3/games.txt";
+    const CONTENTS_API = (path) => `https://api.github.com/repos/bucanero/apollo-saves/contents/${path}`;
 
-// Fetch game saves from database or CSV
-async function fetchSaves(){
-  try{
-    const url = 'https://example.com/game_saves.csv'; // replace with your actual DB/CSV
-    const res = await fetch(url);
-    const text = await res.text();
-    const rows = text.split('\n').slice(1); // skip header
-    rows.forEach(row=>{
-      const [title,thumbnail,downloadURL] = row.split(',');
-      if(title){
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.innerHTML = `
-          <img src="${thumbnail || 'https://via.placeholder.com/80'}" alt="${title}">
-          <p>${title}</p>
-          <button onclick="window.location.href='${downloadURL}'">Download</button>
-        `;
-        savesGrid.appendChild(card);
+    const statusEl = document.getElementById("status");
+    const grid = document.getElementById("grid");
+    const search = document.getElementById("search");
+    const count = document.getElementById("count");
+
+    let all = [];
+
+    function safe(s){
+      return String(s ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+    }
+
+    function parseGamesTxt(text){
+      const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+      const out = [];
+      for (const line of lines) {
+        if (!line.includes("=")) continue;
+        const idx = line.indexOf("=");
+        const titleId = line.slice(0, idx).trim();
+        const name = line.slice(idx + 1).trim();
+        if (titleId) out.push({ titleId, name: name || titleId });
       }
-    });
-  }catch(e){
-    console.error('Failed to fetch game saves:',e);
-  }
-}
-fetchSaves();
-</script>
+      return out;
+    }
+
+    function setButtonLoading(btn, isLoading, text){
+      btn.disabled = isLoading;
+      btn.textContent = text;
+    }
+
+    async function findFirstZipDownloadUrl(titleId){
+      // FIX: PS3 title folders live under PS3/<TITLEID>/ in this repo (matches your original tree URL). [web:119]
+      const res = await fetch(CONTENTS_API(`PS3/${encodeURIComponent(titleId)}`));
+      if (!res.ok) throw new Error(`GitHub API HTTP ${res.status}`);
+      const items = await res.json();
+      if (!Array.isArray(items)) throw new Error("Bad API response");
+
+      const zip = items.find(x => x.type === "file" && typeof x.name === "string" && x.name.toLowerCase().endsWith(".zip"));
+      if (!zip || !zip.download_url) throw new Error("No .zip found for this Title ID");
+
+      return zip.download_url; // direct file link [web:128]
+    }
+
+    async function downloadTitleZip(titleId, btn){
+      try {
+        setButtonLoading(btn, true, "Preparing download...");
+        const url = await findFirstZipDownloadUrl(titleId);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${titleId}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setButtonLoading(btn, false, "Download");
+      } catch (e) {
+        console.error(e);
+        setButtonLoading(btn, false, "Download");
+        alert(`Download failed for ${titleId}: ${e.message || e}`);
+      }
+    }
+
+    function render(list){
+      grid.innerHTML = "";
+
+      if (!list.length) {
+        statusEl.style.display = "block";
+        grid.style.display = "none";
+        statusEl.textContent = "No saves found.";
+        count.textContent = "0";
+        return;
+      }
+
+      statusEl.style.display = "none";
+      grid.style.display = "grid";
+      count.textContent = `${list.length} games`;
+
+      for (const item of list) {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+          <div class="title">${safe(item.name)}</div>
+          <div class="meta">Title ID: ${safe(item.titleId)}</div>
+          <button class="btn" type="button">Download</button>
+        `;
+
+        const btn = card.querySelector("button");
+        btn.addEventListener("click", () => downloadTitleZip(item.titleId, btn));
+
+        grid.appendChild(card);
+      }
+    }
+
+    function applySearch(){
+      const term = search.value.trim().toLowerCase();
+      if (!term) return render(all);
+
+      const filtered = all.filter(x =>
+        (x.name || "").toLowerCase().includes(term) ||
+        (x.titleId || "").toLowerCase().includes(term)
+      );
+      render(filtered);
+    }
+
+    async function load(){
+      statusEl.style.display = "block";
+      statusEl.textContent = "Loading saves…";
+      count.textContent = "Loading…";
+
+      try {
+        const res = await fetch(GAMES_TXT);
+        if (!res.ok) throw new Error("games.txt HTTP " + res.status);
+        const text = await res.text();
+
+        const parsed = parseGamesTxt(text);
+        if (!parsed.length) throw new Error("games.txt parsed to 0 entries.");
+
+        all = parsed;
+        render(all);
+      } catch (e) {
+        grid.style.display = "none";
+        statusEl.style.display = "block";
+        statusEl.innerHTML = `
+          <div class="error">
+            Cannot fetch data: ${safe(e.message || e)}<br><br>
+            Source: <a href="${GAMES_TXT}" target="_blank">PS3/games.txt</a>
+          </div>
+        `;
+        count.textContent = "0";
+      }
+    }
+
+    search.addEventListener("input", applySearch);
+    load();
+  </script>
 </body>
 </html>
