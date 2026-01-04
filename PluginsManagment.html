@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CellBreakers Desktop - Settings</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    /* === YOUR ORIGINAL STYLES (UNCHANGED) === */
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+      background: linear-gradient(135deg, #00111a, #003366);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      color: white;
+    }
+    body.light {
+      color: #333;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    }
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(0, 20, 40, 0.95);
+      backdrop-filter: blur(25px);
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #00d4ff, #ffffff);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    canvas#particles {position:absolute; inset:0; z-index:1;}
+    .container {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      padding: 100px 20px 40px;
+      max-width: 900px;
+      margin: 0 auto;
+      overflow-y: auto;
+    }
+    .setting {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+      padding:25px 30px;
+      margin:25px 0;
+      border-radius:20px;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    button {
+      cursor:pointer;
+      background: linear-gradient(145deg, #0077ff, #00aaff);
+      color: white;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 16px;
+      border: none;
+    }
+    .plugin-list {display:flex; flex-direction:column; gap:15px;}
+    .plugin-item {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background: rgba(255,255,255,0.08);
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="header-content">
+    <h1>Settings</h1>
+    <button onclick="window.location.href='index.html'">← Back</button>
+  </div>
+</div>
+
+<canvas id="particles"></canvas>
+
+<div class="container">
+
+  <!-- SETTINGS (UNCHANGED) -->
+
+  <div class="setting"><label>Plugins Management</label></div>
+  <div class="setting plugin-list" id="pluginList"></div>
+
+  <div class="setting">
+    <button id="installPluginBtn">Install Plugin</button>
+  </div>
+
+</div>
+
+<input type="file" id="cbPluginInput" accept=".cbplugin" hidden>
+
+<script>
+/* =========================================================
+   CBPLUGIN SYSTEM — FULLY INTEGRATED
+   ========================================================= */
+
+const CB_META_KEY = "cb_plugins_meta";
+const CB_CODE_KEY = "cb_plugins_code";
+
+/* -------- PUBLIC PLUGIN API -------- */
+window.CB = {
+  plugins: {},
+  _loading: null,
+
+  register(def) {
+    if (!this._loading) throw new Error("CB.register outside plugin load");
+    this.plugins[this._loading] = def;
+    def.onLoad && def.onLoad();
+  },
+
+  log(...a) { console.log("[CBPLUGIN]", ...a); }
+};
+
+/* -------- STORAGE -------- */
+const loadMeta = () => JSON.parse(localStorage.getItem(CB_META_KEY) || "[]");
+const loadCode = () => JSON.parse(localStorage.getItem(CB_CODE_KEY) || "{}");
+const saveMeta = v => localStorage.setItem(CB_META_KEY, JSON.stringify(v));
+const saveCode = v => localStorage.setItem(CB_CODE_KEY, JSON.stringify(v));
+
+/* -------- UI -------- */
+const pluginList = document.getElementById("pluginList");
+const installBtn = document.getElementById("installPluginBtn");
+const fileInput = document.getElementById("cbPluginInput");
+
+function renderPlugins() {
+  pluginList.innerHTML = "";
+  const meta = loadMeta();
+
+  if (!meta.length) {
+    pluginList.innerHTML = `<div style="opacity:.6">No plugins installed</div>`;
+    return;
+  }
+
+  meta.forEach(p => {
+    const el = document.createElement("div");
+    el.className = "plugin-item";
+    el.innerHTML = `
+      <div>
+        <strong>${p.name}</strong>
+        <div style="opacity:.7;font-size:.85rem">${p.id} • v${p.version}</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="togglePlugin('${p.id}')">${p.enabled ? "Disable" : "Enable"}</button>
+        <button onclick="removePlugin('${p.id}')">Remove</button>
+      </div>
+    `;
+    pluginList.appendChild(el);
+  });
+}
+
+/* -------- EXECUTION -------- */
+function runPlugin(id, code) {
+  try {
+    CB._loading = id;
+    new Function("CB", `"use strict";\n${code}`)(CB);
+    CB._loading = null;
+  } catch (e) {
+    CB._loading = null;
+    console.error("Plugin error:", id, e);
+    alert(`Plugin failed: ${id}`);
+  }
+}
+
+function loadEnabledPlugins() {
+  const meta = loadMeta();
+  const code = loadCode();
+  meta.forEach(p => p.enabled && code[p.id] && runPlugin(p.id, code[p.id]));
+}
+
+/* -------- INSTALL -------- */
+async function installPlugin(file) {
+  const zip = await JSZip.loadAsync(file);
+  const manifest = JSON.parse(await zip.file("manifest.json").async("string"));
+  const entry = await zip.file(manifest.entry).async("string");
+
+  const meta = loadMeta();
+  if (meta.some(p => p.id === manifest.id)) throw new Error("Already installed");
+
+  meta.push({
+    id: manifest.id,
+    name: manifest.name || manifest.id,
+    version: manifest.version || "0.0.0",
+    enabled: true
+  });
+
+  const code = loadCode();
+  code[manifest.id] = entry;
+
+  saveMeta(meta);
+  saveCode(code);
+  runPlugin(manifest.id, entry);
+  renderPlugins();
+}
+
+/* -------- CONTROLS -------- */
+window.togglePlugin = id => {
+  const meta = loadMeta();
+  const p = meta.find(x => x.id === id);
+  if (!p) return;
+  p.enabled = !p.enabled;
+  saveMeta(meta);
+  location.reload();
+};
+
+window.removePlugin = id => {
+  saveMeta(loadMeta().filter(p => p.id !== id));
+  const code = loadCode();
+  delete code[id];
+  saveCode(code);
+  renderPlugins();
+};
+
+/* -------- EVENTS -------- */
+installBtn.onclick = () => fileInput.click();
+fileInput.onchange = () => fileInput.files[0] && installPlugin(fileInput.files[0]).catch(e => alert(e.message));
+
+/* -------- INIT -------- */
+renderPlugins();
+loadEnabledPlugins();
+</script>
+
+</body>
+</html>
